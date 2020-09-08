@@ -150,6 +150,37 @@ export default{
       this.markerColor.color = this.colorList[index]
       this.isChooseColor = false
     },
+    draw (id) {
+      if (this.isAddMark) {
+        this.isAddMark = false
+        this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
+        this.removeMarkerEvent()
+        this.markerButtonTitle = '画点'
+      } else {
+        this.Map.setDefaultCursor('crosshair')
+        this.addMarkerEvent()
+        this.isAddMark = true
+        this.markerButtonTitle = '取消画点'
+      }
+    },
+    removeMarkerEvent () {
+      let vue = this
+      this.Map.off('click', this.addMarkerFunc, vue)
+    },
+    addMarkerFunc  (e) {
+      console.log(this)
+      let position = [e.lnglat.getLng(), e.lnglat.getLat()]
+      let marker = new this.AMap.Marker({
+        icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
+        position: position,
+        offset: new this.AMap.Pixel(-13, -30)
+      })
+      this.Map.add(marker)
+    },
+    addMarkerEvent () {
+      let vue = this
+      this.Map.on('click', this.addMarkerFunc, vue)
+    },
     getMapScript () {
       if (!global.AMap) {
         global.AMap = {}
