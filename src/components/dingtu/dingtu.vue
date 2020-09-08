@@ -23,7 +23,7 @@
       <div class="marker-content-item">
         <label for="">所属图层</label>
         <div>
-          <el-select v-model="value" clearable placeholder="请选择">
+          <el-select v-model="markerAttribute.layerName" clearable placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -36,13 +36,13 @@
       <div class="marker-content-item margin-top">
         <label for="">标记名称</label>
         <div>
-          <input type="text" class="noborder-input" placeholder="请输入标记点名称">
+          <input type="text" class="noborder-input" placeholder="请输入标记点名称" v-model="markerAttribute.title">
         </div>
       </div>
       <div class="marker-content-item">
         <label for="">当前位置</label>
         <div>
-          <input type="text" class="noborder-input" readonly>
+          <input type="text" class="noborder-input" v-model="markerAttribute.location" >
         </div>
       </div>
       <div class="marker-content-item">
@@ -65,9 +65,9 @@
       <div class="marker-content-item">
         <label for="">标记大小</label>
         <div>
-          <el-select v-model="value" clearable placeholder="请选择">
+          <el-select v-model="markerAttribute.size" clearable placeholder="请选择">
             <el-option
-              v-for="item in options"
+              v-for="item in sizeOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value">
@@ -78,7 +78,7 @@
       <div class="marker-content-item margin-top">
         <label for="">备注</label>
         <div>
-          <input type="text" class="noborder-input" placeholder="请输入字段值">
+          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.value">
         </div>
       </div>
       <div class="marker-content-item margin-top">
@@ -89,7 +89,7 @@
       </div>
     </div>
     <div class="form-bottom">
-      <el-button type="primary">保存</el-button>
+      <el-button type="primary" @click="saveMarker">保存</el-button>
       <el-button plain>取消</el-button>
     </div>
   </div>
@@ -103,13 +103,6 @@ export default{
   name: 'DingTu',
   data () {
     return {
-      map: {
-        center: {lng: 121.4472540000, lat: 31.3236200000},
-        zoom: 8,
-        show: true,
-        dragging: true
-      },
-      Bmap: null,
       markerButtonTitle: '画点',
       isAddMark: false,
       isAreaMeasure: false,
@@ -128,6 +121,31 @@ export default{
         'rgb(255, 109, 52)',
         'rgb(255, 192, 67)',
         'rgb(0, 0, 0)'
+      ],
+      markerList: [],
+      layerList: [
+        {
+          value: '选项1',
+          label: '黄金糕'
+        }, {
+          value: '选项2',
+          label: '双皮奶'
+        }
+      ],
+      markerAttribute: {},
+      sizeOptions: [
+        {
+          label: '大',
+          value: 'large'
+        },
+        {
+          label: '中',
+          value: 'normal'
+        },
+        {
+          label: '小',
+          value: 'small'
+        }
       ]
     }
   },
@@ -221,12 +239,35 @@ export default{
     addMarkerFunc  (e) {
       console.log(this)
       let position = [e.lnglat.getLng(), e.lnglat.getLat()]
-      let marker = new this.AMap.Marker({
+      this.marker = new this.AMap.Marker({
         icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
         position: position,
         offset: new this.AMap.Pixel(-13, -30)
       })
-      this.Map.add(marker)
+      this.Map.add(this.marker)
+      let vue = this
+      this.geocoder.getAddress(position, function (status, result) {
+        console.log(vue.markerAttribute)
+        if (status === 'complete' && result.regeocode) {
+          vue.markerAttribute.location = result.regeocode.formattedAddress
+        } else {
+          console.log('根据经纬度查询地址失败')
+        }
+      })
+    },
+    saveMarker () {
+      this.marker.setLabel({
+        offset: new this.AMap.Pixel(20, 20), // 设置文本标注偏移量
+        content: this.markerAttribute.title, // 设置文本标注内容
+        direction: 'right' // 设置文本标注方位
+      })
+      let image = document.getElementById('markerStyle')
+      this.marker.setContent(image)
+      this.marker.setMap(this.Map)
+      this.isAddMark = false
+      this.removeMarkerEvent()
+      this.markerButtonTitle = '画点'
+      this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
     },
     addMarkerEvent () {
       let vue = this
@@ -246,7 +287,7 @@ export default{
 
           const $script = document.createElement('script')
           $script.type = 'text/javascript'
-          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool,AMap.MouseTool&callback=_initBaiduMap`
+          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool,AMap.MouseTool,AMap.Geocoder&callback=_initBaiduMap`
           global.document.body.appendChild($script)
 
           // $script.onload = $script.onreadystatechange = function () {
@@ -274,6 +315,10 @@ export default{
         zoom: 8
       })
       this.mouseTool = new this.AMap.MouseTool(this.Map)
+      this.geocoder = new this.AMap.Geocoder({
+        city: '010', // 城市设为北京，默认：“全国”
+        radius: 1000 // 范围，默认：500
+      })
     }
     // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
   },
