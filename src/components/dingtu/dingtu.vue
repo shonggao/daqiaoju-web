@@ -10,8 +10,8 @@
   <div class="control-container">
     <el-button-group>
       <el-button class="control-button" icon="el-icon-map-location" @click.stop="draw('marker')" id="marker">{{markerButtonTitle}}</el-button>
-      <el-button class="control-button" id="polyline" @click.stop="distance('polyline')">测距</el-button>
-      <el-button class="control-button" id="polygon" @click.stop="draw('polygon')" >面积测量</el-button>
+      <el-button class="control-button" id="polyline" @click.stop="draw('polyline')">{{polylineButtonTitle}}</el-button>
+      <el-button class="control-button" id="polygon" @click.stop="draw('polygon')" >{{polygonButtonTitle}}</el-button>
     </el-button-group>
   </div>
   <div class="marker-form" v-if="isAddMark">
@@ -48,10 +48,10 @@
       <div class="marker-content-item">
         <label for="">标记样式</label>
         <div style="text-align: right; cursor: pointer; padding-left: 0px;" @click.stop="chooseColor()">
-          <button><i class="iconfont el-icon-location" :style="markerColor"></i></button>
+          <button id="markerStyle"><i class="iconfont el-icon-location" :style="markerColor"></i></button>
         </div>
       </div>
-      <div class="marker-content-item"  v-if="isChooseColor">
+      <div class="marker-content-item" style="padding-right: 0px;"  v-if="isChooseColor">
         <div style="padding-left: 0px;">
           <div class="marker-custom-icon" style="background-color: rgb(80, 130, 204);" @click.stop="changeMarkerColor(0)"></div>
           <div class="marker-custom-icon" style="background-color: rgb(101, 179, 68);" @click.stop="changeMarkerColor(1)"></div>
@@ -112,7 +112,10 @@ export default{
       Bmap: null,
       markerButtonTitle: '画点',
       isAddMark: false,
+      isAreaMeasure: false,
+      isDistance: false,
       polylineButtonTitle: '测距',
+      polygonButtonTitle: '面积测量',
       isChooseColor: false,
       markerColor: {
         color: 'rgb(80, 130, 204)'
@@ -156,11 +159,59 @@ export default{
         this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
         this.removeMarkerEvent()
         this.markerButtonTitle = '画点'
-      } else {
-        this.Map.setDefaultCursor('crosshair')
-        this.addMarkerEvent()
-        this.isAddMark = true
-        this.markerButtonTitle = '取消画点'
+        if (id === 'marker') {
+          return 0
+        }
+      }
+      if (this.isDistance) {
+        this.polylineButtonTitle = '测距'
+        this.isDistance = false
+        this.mouseTool.close(true)
+        if (id === 'polyline') {
+          return 0
+        }
+      }
+      if (this.isAreaMeasure) {
+        this.isAreaMeasure = false
+        this.polygonButtonTitle = '面积测量'
+        this.mouseTool.close(true)
+        if (id === 'polygon') {
+          return 0
+        }
+      }
+      switch (id) {
+        case 'polyline': {
+          this.mouseTool.rule({
+            lineOptions: {// 可缺省
+              strokeStyle: 'solid',
+              strokeColor: '#FF33FF',
+              strokeOpacity: 1,
+              strokeWeight: 2
+            }
+            // 同 RangingTool 的 自定义 设置，缺省为默认样式
+          })
+          this.isDistance = true
+          this.polylineButtonTitle = '取消测量'
+          break
+        }
+        case 'polygon': {
+          this.mouseTool.measureArea({
+            strokeColor: '#80d8ff',
+            fillColor: '#80d8ff',
+            fillOpacity: 0.3
+            // 同 Polygon 的 Option 设置
+          })
+          this.isAreaMeasure = true
+          this.polygonButtonTitle = '取消测量'
+          break
+        }
+        case 'marker': {
+          this.Map.setDefaultCursor('crosshair')
+          this.addMarkerEvent()
+          this.isAddMark = true
+          this.markerButtonTitle = '取消画点'
+          break
+        }
       }
     },
     removeMarkerEvent () {
@@ -195,7 +246,7 @@ export default{
 
           const $script = document.createElement('script')
           $script.type = 'text/javascript'
-          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool&callback=_initBaiduMap`
+          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool,AMap.MouseTool&callback=_initBaiduMap`
           global.document.body.appendChild($script)
 
           // $script.onload = $script.onreadystatechange = function () {
@@ -222,6 +273,7 @@ export default{
         center: [116.404, 39.915],
         zoom: 8
       })
+      this.mouseTool = new this.AMap.MouseTool(this.Map)
     }
     // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
   },
