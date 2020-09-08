@@ -150,250 +150,57 @@ export default{
       this.markerColor.color = this.colorList[index]
       this.isChooseColor = false
     },
-    getBMapGLLib () {
-      // this.BMapGL = BMap
-      if (!global.BMapGLLib) {
-        global.BMapGLLib = {}
-        global.BMapGLLib._preloader = new Promise((resolve, reject) => {
-          global._iniBMapGLLib = function () {
-            resolve(global.BMapGLLib)
-
-            global.document.body.removeChild($script)
-            global.document.body.removeChild($link)
-            global.document.body.removeChild($script1)
-            global.BMapGLLib._preloader = null
-            global._initBMapGLLib = null
-          }
-
-          const $link = document.createElement('link')
-          global.document.body.appendChild($link)
-          $link.src = 'https://mapopen.cdn.bcebos.com/github/BMapGLLib/DrawingManager/src/DrawingManager.min.css'
-          const $script = document.createElement('script')
-          global.document.body.appendChild($script)
-          $script.src = `https://mapopen.cdn.bcebos.com/github/BMapGLLib/DrawingManager/src/DrawingManager.min.js`
-
-          const $script1 = document.createElement('script')
-          global.document.body.appendChild($script1)
-          $script1.src = `https://mapopen.cdn.bcebos.com/github/BMapGLLib/DistanceTool/src/DistanceTool.min.js`
-          $script1.onload = $script1.onreadystatechange = function () {
-            if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
-              setTimeout(() => { global._iniBMapGLLib() }, 1000)
-
-              $script1.onload = $script1.onreadystatechange = null
-            }
-          }
-        })
-        return global.BMapGLLib._preloader
-      } else if (!global.BMapGLLib._preloader) {
-        return Promise.resolve(global.BMapGLLib)
-      } else {
-        return global.BMapGLLib._preloader
-      }
-    },
-    initBMapGLLib (BMapGLLib) {
-      var styleOptions = {
-        strokeColor: '#5E87DB', // 边线颜色
-        fillColor: '#5E87DB', // 填充颜色。当参数为空时，圆形没有填充颜色
-        strokeWeight: 2, // 边线宽度，以像素为单位
-        strokeOpacity: 1, // 边线透明度，取值范围0-1
-        fillOpacity: 0.2 // 填充透明度，取值范围0-1
-      }
-      var labelOptions = {
-        borderRadius: '2px',
-        background: '#FFFBCC',
-        border: '1px solid #E1E1E1',
-        color: '#703A04',
-        fontSize: '12px',
-        letterSpacing: '0',
-        padding: '5px'
-      }
-      this.distanceTool = new BMapGLLib.DistanceTool(this.Map)
-      this.drawingManager = new BMapGLLib.DrawingManager(this.Map, {
-        enableCalculate: true, // 绘制是否进行测距测面
-        enableSorption: true, // 是否开启边界吸附功能
-        sorptiondistance: 20, // 边界吸附距离
-        enableGpc: true, // 是否开启延边裁剪功能
-        // enableLimit: true, // 是否开启超限提示
-        // limitOptions: {
-        //   area: 500000000, // 面积超限值
-        //   distance: 300000000 // 距离超限值
-        // },
-        circleOptions: styleOptions, // 圆的样式
-        polylineOptions: styleOptions, // 线的样式
-        polygonOptions: styleOptions, // 多边形的样式
-        rectangleOptions: styleOptions, // 矩形的样式
-        labelOptions: labelOptions // label样式
-      })
-      this.addEvent()
-      console.log(this.distanceTool, this.drawingManager)
-    },
-    reset () {
-      const {getBMapGLLib, initBMapGLLib} = this
-      getBMapGLLib()
-        .then(initBMapGLLib)
-    },
-    addEvent () {
-      this.distanceTool.addEventListener('drawend', function (e) {
-        console.log('drawend')
-        console.log(e.points)
-        console.log(e.overlays)
-        console.log(e.distance)
-        // this.distanceTool.open()
-      })
-      this.distanceTool.addEventListener('addpoint', function (e) {
-        console.log('addpoint')
-        console.log(e.point)
-        console.log(e.pixel)
-        console.log(e.index)
-        console.log(e.distance)
-      })
-      // let vue = this
-      this.distanceTool.addEventListener('removepolyline', function (e) {
-        console.log('removepolyline')
-        console.log(e)
-        // vue.distanceTool.open()
-      })
-      // 绘制完成后获取相关的信息(面积等)
-      this.drawingManager.addEventListener('polygoncomplete', function (e) {
-        console.log('overlaycomplete')
-        alert(e.calculate)
-      })
-    },
-    removEvent () {
-      // this.distanceTool.removeEventListener()
-      this.distanceTool.removeEventListener('drawend', function (e) {
-        console.log('drawend')
-        console.log(e.points)
-        console.log(e.overlays)
-        console.log(e.distance)
-      })
-      this.distanceTool.removeEventListener('addpoint', function (e) {
-        console.log('addpoint')
-        console.log(e.point)
-        console.log(e.pixel)
-        console.log(e.index)
-        console.log(e.distance)
-      })
-      this.distanceTool.removeEventListener('removepolyline', function (e) {
-        console.log('removepolyline')
-        console.log(e)
-      })
-    },
-    draw (id) {
-      // var arr = document.getElementsByClassName('bmap-btn');
-      // for(var i = 0; i<arr.length; i++) {
-      //     arr[i].style.backgroundPositionY = '0';
-      // }
-      // e.style.backgroundPositionY = '-52px';
-      var drawingType
-      switch (id) {
-        case 'marker': {
-          drawingType = window.BMAP_DRAWING_MARKER
-          break
-        }
-        case 'polyline': {
-          drawingType = window.BMAP_DRAWING_POLYLINE
-          break
-        }
-        case 'rectangle': {
-          drawingType = window.BMAP_DRAWING_RECTANGLE
-          break
-        }
-        case 'polygon': {
-          drawingType = window.BMAP_DRAWING_POLYGON
-          break
-        }
-        case 'circle': {
-          drawingType = window.BMAP_DRAWING_CIRCLE
-          break
-        }
-      }
-      console.log(id)
-      console.log(drawingType)
-      if (this.distanceTool._isOpen) {
-        this.polylineButtonTitle = '测距'
-        this.distanceTool.colse()
-      }
-      // 进行绘制
-      if (this.drawingManager._isOpen && this.drawingManager.getDrawingMode() === drawingType) {
-        this.isAddMark = false
-        // this.drawingType = ''
-        this.markerButtonTitle = '画点'
-        this.drawingManager.close()
-      } else {
-        this.isAddMark = true
-        this.markerButtonTitle = '取消画点'
-        this.drawingManager.setDrawingMode(drawingType)
-        this.drawingManager.open()
-      }
-    },
-    distance (id) {
-      console.log(this.distanceTool)
-      if (this.isAddMark) {
-        this.isAddMark = false
-        // this.drawingType = ''
-        this.markerButtonTitle = '画点'
-        this.drawingManager.close()
-      }
-      if (this.distanceTool._isOpen) {
-        console.log('取消测距')
-        this.polylineButtonTitle = '测距'
-        // this.removEvent()
-        this.distanceTool.close()
-      } else {
-        console.log('测距')
-        this.polylineButtonTitle = '取消测距'
-        this.distanceTool.open()
-        // this.addEvent()
-      }
-    }
-  },
-  beforeCreate () {
-    function getMapScript () {
-      if (!global.BMapGL) {
-        global.BMapGL = {}
-        global.BMapGL._preloader = new Promise((resolve, reject) => {
+    getMapScript () {
+      if (!global.AMap) {
+        global.AMap = {}
+        global.AMap._preloader = new Promise((resolve, reject) => {
           global._initBaiduMap = function () {
-            resolve(global.BMapGL)
-            console.log(global.BMapGL)
+            resolve(global.AMap)
+            // console.log(global.AMap)
             global.document.body.removeChild($script)
-            global.BMapGL._preloader = null
+            global.AMap._preloader = null
             global._initBaiduMap = null
           }
 
           const $script = document.createElement('script')
-          global.document.body.appendChild($script)
           $script.type = 'text/javascript'
-          $script.src = `https://api.map.baidu.com/api?type=webgl&v=3.0&ak=Xmyh6oA3PW3mnWY4GTEoPO3VtTP7PGks`
+          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool&callback=_initBaiduMap`
+          global.document.body.appendChild($script)
 
-          $script.onload = $script.onreadystatechange = function () {
-            if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
-              setTimeout(() => { global._initBaiduMap() }, 1000)
+          // $script.onload = $script.onreadystatechange = function () {
+          //   if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
+          //     setTimeout(() => { global._initBaiduMap() }, 1000)
 
-              $script.onload = $script.onreadystatechange = null
-            }
-          }
+          //     $script.onload = $script.onreadystatechange = null
+          //   }
+          // }
         })
-        return global.BMapGL._preloader
-      } else if (!global.BMapGL._preloader) {
-        return Promise.resolve(global.BMapGL)
+        return global.AMap._preloader
+      } else if (!global.AMap._preloader) {
+        return Promise.resolve(global.AMap)
       } else {
-        return global.BMapGL._preloader
+        return global.AMap._preloader
       }
-    };
-
-    getMapScript().then(
-      (BMapGL) => {
-        console.log(BMapGL)
-        window.BMapGL = BMapGL
+    },
+    initMap (AMap) {
+      // console.log(AMap)
+      window.AMap = AMap
+      this.AMap = window.AMap
+      this.Map = new this.AMap.Map('map', {
+        resizeEnable: true,
+        center: [116.404, 39.915],
+        zoom: 8
       })
+    }
+    // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
+  },
+  beforeCreate () {
+
   },
   mounted () {
-    this.BMapGL = window.BMapGL
-    this.Map = new this.BMapGL.Map('map', {enableMapClick: true})
-    this.Map.centerAndZoom(new this.BMapGL.Point(116.404, 39.915), 8)
-    this.Map.enableScrollWheelZoom(true)
-    this.reset()
+    const {getMapScript, initMap} = this
+    getMapScript()
+      .then(initMap)
   }
 }
 </script>
@@ -401,7 +208,7 @@ export default{
 @import '../../assets/css/index.css';
 .map-container{
     width: 100%;
-    height: 840px;
+    height: 803px;
     position: relative;
     overflow: hidden;
     margin: 0;
