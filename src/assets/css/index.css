@@ -1,0 +1,21 @@
+.main-container{
+    min-width: 1400px; /*no*/
+    max-width: 1900px; /*no*/
+    overflow-x: hidden;
+    position: relative;
+    /* justify-content:space-around; */
+}
+
+.line{
+    height: 1px;
+    margin: 0 20px;
+    border-bottom: 2px solid #EEEEEE; /*no*/
+}
+
+.container{
+    background-color: rgb(255, 255, 255);
+    margin: 10px;
+    border-radius: 4px;  /*no*/
+}
+  
+  
