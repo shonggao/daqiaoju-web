@@ -14,7 +14,7 @@
       <el-button class="control-button" id="polygon" @click.stop="draw('polygon')" >{{polygonButtonTitle}}</el-button>
     </el-button-group>
   </div>
-  <div class="marker-form" v-if="isAddMark">
+  <div class="marker-form" v-if="isAddingMarker">
     <div class="form-top">
       <span class="title">添加标记点</span>
       <span class="el-icon-circle-close iconfont "></span>
@@ -23,9 +23,9 @@
       <div class="marker-content-item">
         <label for="">所属图层</label>
         <div>
-          <el-select v-model="markerAttribute.layerName" clearable placeholder="请选择">
+          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择">
             <el-option
-              v-for="item in options"
+              v-for="item in layerList"
               :key="item.value"
               :label="item.label"
               :value="item.value">
@@ -48,7 +48,7 @@
       <div class="marker-content-item">
         <label for="">标记样式</label>
         <div style="text-align: right; cursor: pointer; padding-left: 0px;" @click.stop="chooseColor()">
-          <button id="markerStyle"><i class="iconfont el-icon-location" :style="markerColor"></i></button>
+          <button><i class="iconfont el-icon-location" id="markerStyle" :style="markerColor"></i></button>
         </div>
       </div>
       <div class="marker-content-item" style="padding-right: 0px;"  v-if="isChooseColor">
@@ -65,7 +65,7 @@
       <div class="marker-content-item">
         <label for="">标记大小</label>
         <div>
-          <el-select v-model="markerAttribute.size" clearable placeholder="请选择">
+          <el-select v-model="markerColor.fontSize" size="small" clearable placeholder="请选择">
             <el-option
               v-for="item in sizeOptions"
               :key="item.value"
@@ -90,7 +90,7 @@
     </div>
     <div class="form-bottom">
       <el-button type="primary" @click="saveMarker">保存</el-button>
-      <el-button plain>取消</el-button>
+      <el-button plain @click="cancelMarker">取消</el-button>
     </div>
   </div>
 
@@ -105,13 +105,15 @@ export default{
     return {
       markerButtonTitle: '画点',
       isAddMark: false,
+      isAddingMarker: false,
       isAreaMeasure: false,
       isDistance: false,
       polylineButtonTitle: '测距',
       polygonButtonTitle: '面积测量',
       isChooseColor: false,
       markerColor: {
-        color: 'rgb(80, 130, 204)'
+        color: 'rgb(80, 130, 204)',
+        fontSize: '20px'
       },
       colorList: [
         'rgb(80, 130, 204)',
@@ -126,25 +128,61 @@ export default{
       layerList: [
         {
           value: '选项1',
-          label: '黄金糕'
+          label: '黄金糕',
+          markerList: [
+            {
+              title: '测试点4',
+              color: 'rgb(80, 130, 204)',
+              fontSize: '30px',
+              value: '',
+              location: '',
+              position: [117.397428, 38.90923]
+            }
+          ]
         }, {
           value: '选项2',
-          label: '双皮奶'
+          label: '双皮奶',
+          markerList: [
+            {
+              title: '测试点1',
+              color: 'rgb(80, 130, 204)',
+              fontSize: '20px',
+              value: '',
+              location: '',
+              position: [115.397428, 39.90923]
+            },
+            {
+              title: '测试点2',
+              color: 'rgb(80, 130, 204)',
+              fontSize: '30px',
+              value: '',
+              location: '',
+              position: [116.397428, 38.90923]
+            },
+            {
+              title: '测试点3',
+              color: 'rgb(80, 130, 204)',
+              fontSize: '40px',
+              value: '',
+              location: '',
+              position: [116.397428, 39.90923]
+            }
+          ]
         }
       ],
       markerAttribute: {},
       sizeOptions: [
         {
           label: '大',
-          value: 'large'
+          value: '40px'
         },
         {
           label: '中',
-          value: 'normal'
+          value: '30px'
         },
         {
           label: '小',
-          value: 'small'
+          value: '20px'
         }
       ]
     }
@@ -167,13 +205,56 @@ export default{
         this.isChooseColor = true
       }
     },
+    initLayer () {
+      if (this.layerList) {
+        this.layerList.forEach((item, index) => {
+          for (let markerAttrubute of item.markerList) {
+            this.addMarkByAttribute(markerAttrubute)
+          }
+        }, this)
+      }
+    },
+    drawDOMByStyle (style) {
+      let icon = document.createElement('i')
+      icon.style.color = style.color
+      icon.style.fontSize = style.fontSize
+      icon.className = 'el-icon-location'
+      return icon
+    },
+    addMarkByAttribute (markerAttribute) {
+      let position = markerAttribute.position
+      let marker = new this.AMap.Marker({
+        icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
+        position: position,
+        offset: new this.AMap.Pixel(-13, -30)
+      })
+      // this.Map.add(this.marker)
+      // let vue = this
+      this.geocoder.getAddress(position, function (status, result) {
+        console.log(markerAttribute)
+        if (status === 'complete' && result.regeocode) {
+          markerAttribute.location = result.regeocode.formattedAddress
+        } else {
+          console.log('根据经纬度查询地址失败')
+        }
+      })
+      marker.setLabel({
+        offset: new this.AMap.Pixel(-20, -20), // 设置文本标注偏移量
+        content: markerAttribute.title, // 设置文本标注内容
+        direction: 'right' // 设置文本标注方位
+      })
+      let image = this.drawDOMByStyle(markerAttribute)
+      marker.setContent(image)
+
+      marker.setMap(this.Map)
+    },
     changeMarkerColor (index) {
       this.markerColor.color = this.colorList[index]
       this.isChooseColor = false
     },
     draw (id) {
       if (this.isAddMark) {
-        this.isAddMark = false
+        this.cancelMarker()
         this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
         this.removeMarkerEvent()
         this.markerButtonTitle = '画点'
@@ -238,6 +319,7 @@ export default{
     },
     addMarkerFunc  (e) {
       console.log(this)
+      this.isAddingMarker = true
       let position = [e.lnglat.getLng(), e.lnglat.getLat()]
       this.marker = new this.AMap.Marker({
         icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
@@ -245,6 +327,7 @@ export default{
         offset: new this.AMap.Pixel(-13, -30)
       })
       this.Map.add(this.marker)
+      this.markerAttribute.position = position
       let vue = this
       this.geocoder.getAddress(position, function (status, result) {
         console.log(vue.markerAttribute)
@@ -256,15 +339,38 @@ export default{
       })
     },
     saveMarker () {
+      // 保存标记点信息到对应图层标记列表中
+
       this.marker.setLabel({
-        offset: new this.AMap.Pixel(20, 20), // 设置文本标注偏移量
+        offset: new this.AMap.Pixel(-20, -20), // 设置文本标注偏移量
         content: this.markerAttribute.title, // 设置文本标注内容
         direction: 'right' // 设置文本标注方位
       })
-      let image = document.getElementById('markerStyle')
+      let image = this.drawDOMByStyle(this.markerColor)
+      this.markerAttribute.color = this.markerColor.color
+      this.markerAttribute.fontSize = this.markerColor.fontSize
       this.marker.setContent(image)
+      this.layerList.find((item, index) => {
+        if (item.value === this.markerAttribute.layerName) {
+          item.markerList.push(this.markerAttribute)
+          return true
+        }
+        return false
+      }, this)
+
       this.marker.setMap(this.Map)
       this.isAddMark = false
+      this.isAddingMarker = false
+      this.removeMarkerEvent()
+      this.markerButtonTitle = '画点'
+      this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
+    },
+    cancelMarker () {
+      this.marker.setMap(null)
+      this.marker = null
+      this.markerAttribute = {}
+      this.isAddMark = false
+      this.isAddingMarker = false
       this.removeMarkerEvent()
       this.markerButtonTitle = '画点'
       this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
@@ -319,6 +425,7 @@ export default{
         city: '010', // 城市设为北京，默认：“全国”
         radius: 1000 // 范围，默认：500
       })
+      this.initLayer()
     }
     // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
   },
