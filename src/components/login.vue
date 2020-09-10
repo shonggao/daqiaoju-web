@@ -2,11 +2,11 @@
     <div class="login-container">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px" class="login-form">
             <h2 class="login-title">管理系统</h2>
-            <el-form-item label="用户名">
-                <el-input v-model="form.username" prop="username"></el-input>
+            <el-form-item label="用户名"  prop="username">
+                <el-input v-model="form.username"></el-input>
             </el-form-item>
-            <el-form-item label="密码">
-                <el-input v-model="form.password" prop="password"></el-input>
+            <el-form-item label="密码" prop="password" >
+                <el-input v-model="form.password" type="password" show-password></el-input>
             </el-form-item>
 
             <el-form-item>

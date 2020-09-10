@@ -1,10 +1,5 @@
 <template>
 <div class="main-container">
-    <!-- <baidu-map class="map-container" :center="map.center" :zoom="map.zoom" @ready="handler">
-
-        <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT"></bm-navigation>
-
-        <bm-geolocation anchor="BMAP_ANCHOR_BOTTOM_RIGHT" :showAddressBar="true" :autoLocation="true"></bm-geolocation> -->
   <div id="map" class="map-container">
   </div>
   <div class="control-container">
@@ -25,10 +20,10 @@
         <div>
           <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择">
             <el-option
-              v-for="item in layerList"
+              v-for="(item,index) in layerList"
               :key="item.value"
               :label="item.label"
-              :value="item.value">
+              :value="index">
             </el-option>
           </el-select>
         </div>
@@ -62,7 +57,7 @@
           <div class="marker-custom-icon" style="background-color: rgb(0, 0, 0);" @click.stop="changeMarkerColor(6)"></div>
         </div>
       </div>
-      <div class="marker-content-item">
+      <div class="marker-content-item margin-bottom">
         <label for="">标记大小</label>
         <div>
           <el-select v-model="markerColor.fontSize" size="small" clearable placeholder="请选择">
@@ -75,10 +70,11 @@
           </el-select>
         </div>
       </div>
-      <div class="marker-content-item margin-top">
-        <label for="">备注</label>
+
+      <div class="marker-content-item" v-for="(item,index) in layerList[layerIndex].valueKeyList" :key="index">
+        <label for="">{{item.key}}</label>
         <div>
-          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.value">
+          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.valueList[index].value">
         </div>
       </div>
       <div class="marker-content-item margin-top">
@@ -91,6 +87,87 @@
     <div class="form-bottom">
       <el-button type="primary" @click="saveMarker">保存</el-button>
       <el-button plain @click="cancelMarker">取消</el-button>
+    </div>
+  </div>
+
+  <div class="marker-form" v-if="isEdittingMarker">
+    <div class="form-top">
+      <span class="title">添加标记点</span>
+      <span class="el-icon-circle-close iconfont "></span>
+    </div>
+    <div class="marker-content">
+      <div class="marker-content-item">
+        <label for="">所属图层</label>
+        <div>
+          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择">
+            <el-option
+              v-for="(item,index) in layerList"
+              :key="item.value"
+              :label="item.label"
+              :value="index">
+            </el-option>
+          </el-select>
+        </div>
+      </div>
+      <div class="marker-content-item margin-top">
+        <label for="">标记名称</label>
+        <div>
+          <input type="text" class="noborder-input" placeholder="请输入标记点名称" v-model="markerAttribute.title">
+        </div>
+      </div>
+      <div class="marker-content-item">
+        <label for="">当前位置</label>
+        <div>
+          <input type="text" class="noborder-input" v-model="markerAttribute.location" >
+        </div>
+      </div>
+      <div class="marker-content-item">
+        <label for="">标记样式</label>
+        <div style="text-align: right; cursor: pointer; padding-left: 0px;" @click.stop="chooseColor()">
+          <button><i class="iconfont el-icon-location" id="markerStyle" :style="markerColor"></i></button>
+        </div>
+      </div>
+      <div class="marker-content-item" style="padding-right: 0px;"  v-if="isChooseColor">
+        <div style="padding-left: 0px;">
+          <div class="marker-custom-icon" style="background-color: rgb(80, 130, 204);" @click.stop="changeMarkerColor(0)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(101, 179, 68);" @click.stop="changeMarkerColor(1)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(255, 0, 0);" @click.stop="changeMarkerColor(2)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(174, 106, 177);" @click.stop="changeMarkerColor(3)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(255, 109, 52);" @click.stop="changeMarkerColor(4)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(255, 192, 67);" @click.stop="changeMarkerColor(5)"></div>
+          <div class="marker-custom-icon" style="background-color: rgb(0, 0, 0);" @click.stop="changeMarkerColor(6)"></div>
+        </div>
+      </div>
+      <div class="marker-content-item margin-bottom">
+        <label for="">标记大小</label>
+        <div>
+          <el-select v-model="markerColor.fontSize" size="small" clearable placeholder="请选择">
+            <el-option
+              v-for="item in sizeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </div>
+      </div>
+
+      <div class="marker-content-item" v-for="(item,index) in layerList[layerIndex].valueKeyList" :key="index">
+        <label for="">{{item.key}}</label>
+        <div>
+          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.valueList[index].value">
+        </div>
+      </div>
+      <div class="marker-content-item margin-top">
+        <label for="">图片</label>
+        <div>
+          <input type="text" class="noborder-input" placeholder="上传图片">
+        </div>
+      </div>
+    </div>
+    <div class="form-bottom">
+      <el-button type="primary" @click="editMarker(markerAttribute.layerName,markerAttribute.id)">保存</el-button>
+      <el-button plain @click="removeMarker(markerAttribute.layerName,markerAttribute.id)">取消</el-button>
     </div>
   </div>
 
@@ -108,9 +185,11 @@ export default{
       isAddingMarker: false,
       isAreaMeasure: false,
       isDistance: false,
+      isEdittingMarker: false,
       polylineButtonTitle: '测距',
       polygonButtonTitle: '面积测量',
       isChooseColor: false,
+      layerIndex: 0,
       markerColor: {
         color: 'rgb(80, 130, 204)',
         fontSize: '20px'
@@ -129,12 +208,25 @@ export default{
         {
           value: '选项1',
           label: '黄金糕',
+          valueKeyList: [
+            {
+              key: '标记名称'
+            },
+            {
+              key: '标记地址'
+            },
+            {
+              key: '建设单位'
+            }
+          ],
           markerList: [
             {
+              id: '4',
               title: '测试点4',
               color: 'rgb(80, 130, 204)',
               fontSize: '30px',
-              value: '',
+              layerName: 0,
+              valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
               location: '',
               position: [117.397428, 38.90923]
             }
@@ -142,35 +234,53 @@ export default{
         }, {
           value: '选项2',
           label: '双皮奶',
+          valueKeyList: [
+            {
+              key: '标记名称'
+            },
+            {
+              key: '标记地址'
+            },
+            {
+              key: '建设单位'
+            }
+          ],
           markerList: [
             {
+              id: '1',
               title: '测试点1',
               color: 'rgb(80, 130, 204)',
               fontSize: '20px',
-              value: '',
+              valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
               location: '',
+              layerName: 1,
               position: [115.397428, 39.90923]
             },
             {
+              id: '2',
               title: '测试点2',
               color: 'rgb(80, 130, 204)',
               fontSize: '30px',
-              value: '',
+              valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
               location: '',
+              layerName: 1,
               position: [116.397428, 38.90923]
             },
             {
+              id: '3',
               title: '测试点3',
               color: 'rgb(80, 130, 204)',
               fontSize: '40px',
-              value: '',
+              valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
+              layerName: 1,
               location: '',
               position: [116.397428, 39.90923]
             }
           ]
         }
       ],
-      markerAttribute: {},
+      markerAttribute: {
+      },
       sizeOptions: [
         {
           label: '大',
@@ -188,15 +298,12 @@ export default{
     }
   },
   methods: {
-    addmaker () {
-      /* eslint-disable-next-line */
-      if(this.Map == null){
-        return false
-      } else {
-        if (this.isAddMark) {
-          this.isAddMark = false
-        }
+    initValueList (num) {
+      let valueList = []
+      for (var i = 0; i < num; i++) {
+        valueList.push({value: ''})
       }
+      return valueList
     },
     chooseColor () {
       if (this.isChooseColor) {
@@ -208,11 +315,67 @@ export default{
     initLayer () {
       if (this.layerList) {
         this.layerList.forEach((item, index) => {
+          this.markerList[index] = {}
+          this.markerList[index].layerName = item.label
+          this.markerList[index].show = true
+          this.markerList[index].markers = []
           for (let markerAttrubute of item.markerList) {
-            this.addMarkByAttribute(markerAttrubute)
+            this.markerList[index].markers.push(this.initMarkByAttribute(markerAttrubute))
           }
         }, this)
       }
+    },
+    hiddenLayer (index) {
+      this.markerList[index].show = false
+      this.markerList[index].markers.forEach((item, index) => {
+        item.setMap(null)
+      }, this)
+    },
+    removeMarker (layerIndex, markerid) {
+      this.markerList[layerIndex].markers.find((item, index, arr) => {
+        if (item.getExtData().id === markerid) {
+          item.setMap(null)
+          arr.splice(index, 1)
+          this.layerList[layerIndex].markerList.splice(index, 1)
+          return true
+        }
+        return false
+      }, this)
+      this.initMarkerAttribue()
+      this.isEdittingMarker = false
+    },
+    initMarkerAttribue () {
+      this.markerAttribute = { }
+      this.markerAttribute.layerName = this.layerIndex
+      this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
+    },
+    findMarkerById (markerid) {
+      for (var layer of this.layerList) {
+        var item = layer.markerList.find((item, index) => {
+          if (item.id === markerid) {
+            return true
+          }
+          return false
+        }, this)
+        if (item) {
+          return item
+        }
+      }
+      return undefined
+    },
+    editMarker (layerIndex, markerid) {
+      this.markerList[layerIndex].markers.find((item, index, arr) => {
+        if (item.getExtData().id === markerid) {
+          item.setMap(null)
+          item = this.initMarkByAttribute(this.markerAttribute)
+          this.layerList[layerIndex].markerList[index] = this.markerAttribute
+
+          return true
+        }
+        return false
+      }, this)
+      this.initMarkerAttribue()
+      this.isEdittingMarker = false
     },
     drawDOMByStyle (style) {
       let icon = document.createElement('i')
@@ -221,7 +384,7 @@ export default{
       icon.className = 'el-icon-location'
       return icon
     },
-    addMarkByAttribute (markerAttribute) {
+    initMarkByAttribute (markerAttribute) {
       let position = markerAttribute.position
       let marker = new this.AMap.Marker({
         icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
@@ -244,9 +407,12 @@ export default{
         direction: 'right' // 设置文本标注方位
       })
       let image = this.drawDOMByStyle(markerAttribute)
+      marker.setExtData({id: markerAttribute.id})
       marker.setContent(image)
-
       marker.setMap(this.Map)
+      marker.on('click', this.markerClickFunc, this)
+      return marker
+      // marker.setMap(this.Map)
     },
     changeMarkerColor (index) {
       this.markerColor.color = this.colorList[index]
@@ -317,6 +483,11 @@ export default{
       let vue = this
       this.Map.off('click', this.addMarkerFunc, vue)
     },
+    markerClickFunc (e) {
+      console.log(e.target)
+      this.markerAttribute = this.findMarkerById(e.target.getExtData().id)
+      this.isEdittingMarker = true
+    },
     addMarkerFunc  (e) {
       console.log(this)
       this.isAddingMarker = true
@@ -330,7 +501,7 @@ export default{
       this.markerAttribute.position = position
       let vue = this
       this.geocoder.getAddress(position, function (status, result) {
-        console.log(vue.markerAttribute)
+        console.log(vue.isAddingMarker)
         if (status === 'complete' && result.regeocode) {
           vue.markerAttribute.location = result.regeocode.formattedAddress
         } else {
@@ -350,15 +521,20 @@ export default{
       this.markerAttribute.color = this.markerColor.color
       this.markerAttribute.fontSize = this.markerColor.fontSize
       this.marker.setContent(image)
-      this.layerList.find((item, index) => {
-        if (item.value === this.markerAttribute.layerName) {
-          item.markerList.push(this.markerAttribute)
-          return true
-        }
-        return false
-      }, this)
-
+      this.layerList[this.markerAttribute.layerName].markerList.push(this.markerAttribute)
+      // this.layerList.find((item, index) => {
+      //   if (item.value === this.markerAttribute.layerName) {
+      //     item.markerList.push(this.markerAttribute)
+      //     return true
+      //   }
+      //   return false
+      // }, this)
+      this.initMarkerAttribue()
+      // this.markerAttribute = { }
+      // this.markerAttribute.layerName = this.layerIndex
+      // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
       this.marker.setMap(this.Map)
+      this.marker.on('click', this.markerClickFunc, this)
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
@@ -368,7 +544,10 @@ export default{
     cancelMarker () {
       this.marker.setMap(null)
       this.marker = null
-      this.markerAttribute = {}
+      this.initMarkerAttribue()
+      // this.markerAttribute = { }
+      // this.markerAttribute.layerName = this.layerIndex
+      // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
@@ -426,6 +605,8 @@ export default{
         radius: 1000 // 范围，默认：500
       })
       this.initLayer()
+      this.markerAttribute.layerName = this.layerIndex
+      this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
     }
     // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
   },
@@ -443,7 +624,7 @@ export default{
 @import '../../assets/css/index.css';
 .map-container{
     width: 100%;
-    height: 803px;
+    height: 100%;
     position: relative;
     overflow: hidden;
     margin: 0;
@@ -543,6 +724,10 @@ export default{
 
 .marker-content .margin-top {
     margin-top: 10px;
+}
+
+.marker-content .margin-bottom {
+    margin-bottom: 10px;
 }
 
 .marker-custom-icon{

@@ -1,5 +1,5 @@
 <template>
-    <el-container class="mianview">
+    <el-container class="mainview">
         <el-header>
         <div class="websiteicon">
         </div>
@@ -75,29 +75,29 @@ export default {
 
 <style>
 .mainview{
-position: relative;
-width: 100%;
-height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .el-header{
-display: flex;
-background-color: rgb(33, 33, 33);
-color: rgb(255, 255, 255);
-text-align: center;
-line-height: 60px;
+    display: flex;
+    background-color: rgb(33, 33, 33);
+    color: rgb(255, 255, 255);
+    text-align: center;
+    line-height: 60px;
 }
 
 .el-menu-item.is-active {
-background-color: #0BB976 !important;
+    background-color: #0BB976 !important;
 }
 
 .el-aside{
-background-color: rgb(255, 255, 255);
-color: #333;
-text-align: center;
-line-height: 200px;
-height: 100%;
+    background-color: rgb(255, 255, 255);
+    color: #333;
+    text-align: center;
+    line-height: 200px;
+    height: 100%;
 }
 
 .websiteicon {
@@ -132,7 +132,7 @@ font-size: 23px;
 }
 
 .el-menu-item [class^=el-icon-] {
-font-size: 23px;
+    font-size: 23px;
 }
 
 .el-submenu .el-menu-item {
@@ -140,12 +140,12 @@ font-size: 23px;
 }
 
 .el-submenu .el-menu {
-background-color: #F7F7F7;
+    background-color: #F7F7F7;
 }
 
 .el-main{
-background-color: rgb(218, 235, 243);
-height: 100%;
+    background-color: rgb(218, 235, 243);
+    height: 100%;
 }
 
 /* #app {
