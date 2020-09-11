@@ -1,6 +1,25 @@
 <template>
 <div class="main-container">
+  <div class="layer-container" v-if="isMenuShow">
+    <div class="layer-container-title" style="overflow: hidden">
+      <p>图层列表</p>
+      <i class="el-icon-plus"></i>
+    </div>
+    <div class="layer-box" v-for="(item , index) in layerList" :key="item.value" style="overflow: hidden">
+      <i class="el-icon-folder-opened layerIcon" style="float: left"></i>
+      <p :class="{layerName:true,defaultLayer:(layerIndex == index)}" style="float: left">{{item.label}}
+        <span>({{item.markerList.length}})</span>
+      </p>
+      <i class="el-icon-view layer-setting-icon" style="float: right"></i>
+      <i class="el-icon-setting layer-setting-icon" style="float: right"></i>
+    </div>
+  </div>
   <div id="map" class="map-container">
+    <div class="show-menu-container" @click.stop="showMenuFun">
+      <a class="show-menu-button">
+        <i :class="{'el-icon-arrow-right':(!isMenuShow),'el-icon-arrow-left':(isMenuShow)}"></i>
+      </a>
+    </div>
   </div>
   <div class="control-container">
     <el-button-group>
@@ -170,7 +189,6 @@
       <el-button plain @click="removeMarker(markerAttribute.layerName,markerAttribute.id)">取消</el-button>
     </div>
   </div>
-
     <!-- </baidu-map> -->
 </div>
 </template>
@@ -186,6 +204,7 @@ export default{
       isAreaMeasure: false,
       isDistance: false,
       isEdittingMarker: false,
+      isMenuShow: true,
       polylineButtonTitle: '测距',
       polygonButtonTitle: '面积测量',
       isChooseColor: false,
@@ -298,6 +317,13 @@ export default{
     }
   },
   methods: {
+    showMenuFun () {
+      if (this.isMenuShow) {
+        this.isMenuShow = false
+      } else {
+        this.isMenuShow = true
+      }
+    },
     initValueList (num) {
       let valueList = []
       for (var i = 0; i < num; i++) {
@@ -622,8 +648,14 @@ export default{
 </script>
 <style lang="scss" scoped>
 @import '../../assets/css/index.css';
+
+.main-container{
+  display: flex;
+}
+
 .map-container{
-    width: 100%;
+    /* width: 100%; */
+    flex: 4;
     height: 100%;
     position: relative;
     overflow: hidden;
@@ -679,9 +711,9 @@ export default{
     line-height: 40px;
     padding: 0 15px;
     background: #fff;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee; /*no*/
     overflow: hidden;
-    font-size: 12px;
+    font-size: 12px; /*no*/
     input {
       height: 30px;
       width: 100%;
@@ -716,7 +748,7 @@ export default{
     position: absolute;
     bottom: 0;
     left: 0;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #eee; /*no*/
     text-align: right;
     padding: 0 10px;
     background: #fff;
@@ -735,7 +767,7 @@ export default{
     height: 30px;
     padding-left: 0 !important;
     float: left;
-    border-radius: 3px;
+    border-radius: 3px; /*no*/
     margin: 5px 4px;
     cursor: pointer;
 }
@@ -751,12 +783,12 @@ export default{
 .marker-form .form-top .iconfont{
     float: right;
     padding-right: 10px;
-    font-size: 20px;
+    font-size: 20px; /*no*/
     padding-top: 10px;
 }
 
 .iconfont{
-  font-size: 20px;
+  font-size: 20px;/*no*/
 }
 
 .marker-content .marker-content-item button{
@@ -765,6 +797,82 @@ export default{
     text-align: right;
     padding-right: 0;
     outline: none;
+}
+
+.layer-container{
+  flex: 1;
+  min-width: 240px;
+  height: 100%;
+  background-color: #fff;
+  padding: 0 15px;
+}
+
+.defaultLayer::after{
+  content: "默认";
+  color: white;
+  background-color: #FF5722;
+  font-size: 12px; /*no*/
+  text-align: center;
+  border-radius: 2px; /*no*/
+  padding: 0 6px;
+  margin-left: 3px;
+}
+
+.layerIcon{
+  float: left;
+  margin-top: 16px;
+  margin-right: 5px;
+  font-size: 20px;  /*no*/
+  color: #35b499;
+}
+
+.layerName{
+  font-size: 16px;  /*no*/
+}
+
+.layer-setting-icon{
+  font-size: 20px;  /*no*/
+  margin-top: 16px;
+  margin-right: 5px;
+  color: #35b499;
+}
+
+.layer-container-title{
+  p{
+    float: left;
+    font-size: 20px;  /*no*/
+    margin-left: 5px;
+    font-weight: 700;
+    font-family: auto;
+  }
+  i{
+    float: right;
+    font-size: 20px;  /*no*/
+    margin-top: 26px;
+    font-weight: 700;
+    color: #35b499;
+  }
+}
+
+.show-menu-container {
+    position: absolute;
+    top: 50%;
+    /* left: 300px; */
+    margin-top: -50px;
+    z-index: 1099;
+    background: rgba(0,0,0,.38);
+    width: 12px; /*no*/
+    height: 100px; /*no*/
+    line-height: 100px; /*no*/
+    border-top-right-radius: 100px; /*no*/
+    border-bottom-right-radius: 100px;/*no*/
+    cursor: pointer;
+    .show-menu-btn {
+      color: #fff;
+      width: 12px;
+      height: 30px;
+      font-size: 16px;  /*no*/
+    }
 }
 
 /deep/ .el-select{
