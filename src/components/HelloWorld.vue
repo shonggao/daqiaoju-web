@@ -170,6 +170,7 @@
 
 <script>
 import option from '../assets/js/map.js'
+import deepClone from '../assets/js/deepcopy.js'
 // import '../assets/js/china.js'
 
 export default {
@@ -250,6 +251,7 @@ export default {
       }],
       value1: '',
       value2: '',
+      input: '',
       formLabelWidth: '120px',
       dialogFormVisible: false,
       editindex: '',
@@ -480,16 +482,20 @@ export default {
       this.myChart[chartid].setOption(options)
     },
     editFrom () {
-      console.log(this.form)
-      this.tableData1[this.editindex] = this.form
+      // this.tableData1[this.editindex] = this.form
+      // console.log(this.tableData1)
+      this.tableData1[this.editindex].name = this.form.name
+      this.tableData1[this.editindex].province = this.form.province
+      this.tableData1[this.editindex].city = this.form.city
+      this.tableData1[this.editindex].date = this.form.date
+      this.tableData1[this.editindex].address = this.form.address
       this.form = {}
       this.editindex = ''
       this.dialogFormVisible = false
     },
     handleEdit (index, row) {
       this.editindex = index
-      console.log(index)
-      this.form = this.tableData1[index]
+      this.form = deepClone(this.tableData1[index])
       this.dialogFormVisible = true
     }
   },
