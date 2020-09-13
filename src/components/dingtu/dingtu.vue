@@ -41,6 +41,10 @@
     </div>
   </div>
   <div id="map" class="map-container">
+    <div class="search-container">
+      <input id="addressinput" class="input-box" v-model="searchAddress" placeholder="请输入要搜索的地点">
+      <button class='btn'><i class="iconfont el-icon-search"></i></button>
+    </div>
     <div class="show-menu-container" @click.stop="showMenuFun">
       <a class="show-menu-button">
         <i :class="{'el-icon-arrow-right':(!isMenuShow),'el-icon-arrow-left':(isMenuShow)}"></i>
@@ -256,6 +260,7 @@ export default{
       showLabelButtonTitle: '显示标题',
       isShowLabel: false,
       addMarkerLayerName: 0,
+      searchAddress: '',
       layer: {},
       markerColor: {
         color: 'rgb(80, 130, 204)',
@@ -814,7 +819,7 @@ export default{
 
           const $script = document.createElement('script')
           $script.type = 'text/javascript'
-          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool,AMap.MouseTool,AMap.Geocoder&callback=_initBaiduMap`
+          $script.src = `https://webapi.amap.com/maps?v=1.4.15&key=7c9346b11617747218a9c04c55dd8052&plugin=AMap.RangingTool,AMap.MouseTool,AMap.Geocoder,AMap.Autocomplete,AMap.PlaceSearch&callback=_initBaiduMap`
           global.document.body.appendChild($script)
 
           // $script.onload = $script.onreadystatechange = function () {
@@ -832,6 +837,17 @@ export default{
         return global.AMap._preloader
       }
     },
+    select (e) {
+      this.placeSearch.setCity(e.poi.adcode)
+      this.placeSearch.search(e.poi.name, (status, searchResult) => {
+        if (status) {
+          console.log(searchResult)
+        } else {
+          console.log('未找到相关信息')
+        }
+      }) // 关键字查询查询
+    },
+
     initMap (AMap) {
       // console.log(AMap)
       window.AMap = AMap
@@ -846,6 +862,14 @@ export default{
         city: '010', // 城市设为北京，默认：“全国”
         radius: 1000 // 范围，默认：500
       })
+      var autoOptions = {
+        input: 'addressinput'
+      }
+      var auto = new this.AMap.Autocomplete(autoOptions)
+      this.placeSearch = new this.AMap.PlaceSearch({
+        map: this.Map
+      }) // 构造地点查询类
+      this.AMap.event.addListener(auto, 'select', this.select, this)// 注册监听，当选中某条记录时会触发
       this.initLayer()
       this.markerAttribute.layerName = this.layerIndex
       this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
@@ -898,6 +922,40 @@ export default{
 
 .control-button:hover{
   color: red;
+}
+
+.search-container{
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  width: 300px;
+  overflow: hidden;
+  .btn{
+    height: 33px;
+    background: none;
+    font-size: 17px;
+    color: grey;
+    position: absolute;
+    right: 0;
+    top: 4px;
+    outline: none;
+    padding: 0 5px;
+    line-height: 33px;
+    border: none;
+  }
+}
+
+#addressinput{
+  height: 35px;
+  border-radius: 5px;
+  border: 1px solid #eee;
+  padding: 0 10px;
+  width: 100%;
+  padding-right: 40px;
+  outline: none;
+  -webkit-box-shadow: 0 0 10px #ccc;
+  box-shadow: 0 0 10px #ccc;
 }
 
 .marker-form {
