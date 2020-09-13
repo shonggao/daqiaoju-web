@@ -27,9 +27,9 @@
       <el-dropdown trigger="click"  style="float: right">
         <i class="el-icon-setting layer-setting-icon"></i>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item >数据管理</el-dropdown-item>
+          <el-dropdown-item @click.native="startDataManager(index)">数据管理</el-dropdown-item>
           <el-dropdown-item @click.native="setLayerDefault(index)">设为默认</el-dropdown-item>
-          <el-dropdown-item >字段管理</el-dropdown-item>
+          <el-dropdown-item @click.native="startFieldEdit(index)">字段管理</el-dropdown-item>
           <el-dropdown-item @click.native="editLayerStart(index)">编辑</el-dropdown-item>
           <el-dropdown-item >分享图层</el-dropdown-item>
           <el-dropdown-item >数据导入</el-dropdown-item>
@@ -50,6 +50,114 @@
         <i :class="{'el-icon-arrow-right':(!isMenuShow),'el-icon-arrow-left':(isMenuShow)}"></i>
       </a>
     </div>
+    <div class="dataManager-container" v-if="isDataManager">
+      <div class="dataManager-top">
+        <p class="layerName">{{dataManagerLayer.label}}</p>
+        <p class="container-title">数据管理</p>
+        <input type="text" class="dataFilter" placeholder="请输入筛选内容">
+        <el-button type="success">设置样式</el-button>
+        <el-button type="success">移动数据</el-button>
+        <el-button type="danger">批量删除</el-button>
+        <i class="el-icon-close close-icon" @click="isDataManager = false"></i>
+      </div>
+      <div class="dataManager-content">
+      <el-table
+        :data="dataManagerLayer.markerList"
+        border>
+        <el-table-column
+          type="selection"
+          width="55">
+        </el-table-column>
+        <el-table-column
+          label="样式"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          label="标记名称"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          label="详细地址"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          v-for="(item,index) in dataManagerLayer.valueKeyList"
+          :key="index"
+          :prop="valueList[index].value"
+          :label="item.key"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          label="创建人"
+          width="100">
+        </el-table-column>
+        <el-table-column
+          label="添加时间"
+          width="100">
+       </el-table-column>
+        <el-table-column label="操作" style="min-width: 150px">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      </div>
+    </div>
+    <el-dialog :title="fieldManagerLayer.label + '- 字段管理'" :visible.sync="isFieldEdit">
+      <div class="fieldedit-content">
+      <el-table
+        :data="fieldManagerLayer.valueKeyList"
+        border>
+      <el-table-column
+        label="字段名称"
+        prop="key"
+        min-width="50%">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        min-width="50%">
+        <template slot-scope="scope">
+          <el-button
+          size="mini"
+          type="danger"
+          @click="deleteValueKey(scope.$index, scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
+      </el-table>
+      </div>
+      <div class="fieldedit-bottom">
+        <el-button style="float: right; margin-right: 10px;" type="success" @click="isAddValueKey = true">新增</el-button>
+      </div>
+      <el-dialog
+      width="50%"
+      title="新增字段"
+      :visible.sync="isAddValueKey"
+      append-to-body>
+      <el-form>
+        <el-form-item label="字段名称" label-width="120px">
+          <el-input v-model="newValueKey" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="isAddValueKey = false">取 消</el-button>
+        <el-button type="primary" @click="addValueKey">确 定</el-button>
+      </div>
+      </el-dialog>
+    </el-dialog>
+    <!-- <div class="fieldedit-container" v-if="isFieldEdit">
+      <div class="fieldedit-top">
+        <p class="layerName">{{fieldManagerLayer.label}}</p>
+        <p class="container-title">字段管理</p>
+        <i class="el-icon-close close-icon" @click="isFieldEdit = false"></i>
+      </div>
+      <div class="fieldedit-content"></div>
+    </div> -->
   </div>
   <div class="control-container">
     <el-button-group>
@@ -149,7 +257,7 @@
       <div class="marker-content-item">
         <label for="">所属图层</label>
         <div class="self-input">
-          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择">
+          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择" @change="markerLayerIndexChanged">
             <el-option
               v-for="(item) in layerNameList"
               :key="item.value"
@@ -245,24 +353,31 @@ export default{
   data () {
     return {
       markerButtonTitle: '画点',
-      isAddMark: false,
-      isAddingMarker: false,
+      isAddMark: false, // 处于添加标记点状态
+      isAddingMarker: false, // 正在添加标记点
       isAreaMeasure: false,
       isDistance: false,
-      isEdittingMarker: false,
-      isMenuShow: true,
-      editLayerDialogVisible: false,
-      popVisible: false,
+      isEdittingMarker: false, // 正在编辑标记点
+      isMenuShow: true, // 图层侧边栏是否显示
+      editLayerDialogVisible: false, // 编辑图层窗口是否显示
+      popVisible: false, // 删除提示框
       polylineButtonTitle: '测距',
       polygonButtonTitle: '面积测量',
-      isChooseColor: false,
-      layerIndex: 0,
+      isChooseColor: false, // 是否选择标记填样式
+      layerIndex: 0, // 默认图层index值
+      dataLayerIndex: 0, // 显示数据管理的图层index
+      isDataManager: false, // 数据管理窗体是否显示
+      isFieldEdit: false,
+      fieldLayerIndex: 0,
       showLabelButtonTitle: '显示标题',
-      isShowLabel: false,
-      addMarkerLayerName: 0,
+      isShowLabel: false, // 是否显示标题
+      newValueKey: '',
+      isAddValueKey: false,
+      addMarkerLayerName: 0, // 添加标记点所属图层index
       searchAddress: '',
       layer: {},
       markerColor: {
+        // 目前操作标记点的样式
         color: 'rgb(80, 130, 204)',
         fontSize: '20px'
       },
@@ -275,7 +390,7 @@ export default{
         'rgb(255, 192, 67)',
         'rgb(0, 0, 0)'
       ],
-      markerList: [],
+      markerList: [], // 地图中存储标记点的列表，按照所属图层分类
       layerList: [
         {
           value: 0,
@@ -354,7 +469,7 @@ export default{
         }
       ],
       markerAttribute: {
-      },
+      }, // 目前操作标记点的属性值
       sizeOptions: [
         {
           label: '大',
@@ -372,6 +487,36 @@ export default{
     }
   },
   methods: {
+    deleteValueKey (index, row) {
+      this.layerList[this.fieldLayerIndex].valueKeyList.splice(index, 1)
+      this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
+        item.valueList.splice(index, 1)
+      })
+      this.isAddValueKey = false
+    },
+    addValueKey () {
+      // var valuelist = deepClone(this.layerList[this.fieldLayerIndex].valueKeyList)
+      // valuelist.push({key: this.newValueKey})
+      // this.layerList[this.fieldLayerIndex].valueKeyList = valuelist
+      // this.$set(this.layerList[this.fieldLayerIndex], 'valueKeyList', valuelist)
+      // this.oldValueKeyList = deepClone(this.fieldManagerLayer.valueKeyList)
+      // console.log(JSON.stringify(this.oldValueKeyList) === JSON.stringify(this.fieldManagerLayer.valueKeyList))
+      this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
+        item.valueList.push({value: ''})
+      })
+      this.layerList[this.fieldLayerIndex].valueKeyList.push({key: this.newValueKey})
+      console.log(this.layerList[this.fieldLayerIndex])
+      this.newValueKey = ''
+      this.isAddValueKey = false
+    },
+    startFieldEdit (index) {
+      this.isFieldEdit = true
+      this.fieldLayerIndex = index
+    },
+    startDataManager (index) {
+      this.isDataManager = true
+      this.dataLayerIndex = index
+    },
     showLabel () {
       if (this.isShowLabel) {
         this.isShowLabel = false
@@ -422,9 +567,18 @@ export default{
       // console.log(this.markerAttribute)
       // var value = this.markerAttribute.layerName
       // this.markerAttribute.layerName = value
+      this.initMarkerAttribue(value)
       this.$set(this.markerAttribute, 'layerName', value)
       // this.markerAttribute.$set('layerName', this.markerAttribute.value)
       console.log(this.markerAttribute)
+    },
+    markerLayerIndexChanged (value) {
+      if (this.markerAttribute.valueList.length < this.layerList[value].valueKeyList.length) {
+        var count = this.layerList[value].valueKeyList.length - this.markerAttribute.valueList.length
+        for (var i = 0; i < count; i++) {
+          this.markerAttribute.valueList.push({value: ''})
+        }
+      }
     },
     visibleLayer (index) {
       if (this.layerList[index].visible) {
@@ -463,7 +617,7 @@ export default{
     setLayerDefault (index) {
       console.log('setLayerDefault')
       this.layerIndex = index
-      this.initMarkerAttribue()
+      this.initMarkerAttribue(this.layerIndex)
     },
     showMenuFun () {
       if (this.isMenuShow) {
@@ -522,15 +676,15 @@ export default{
         return false
       }, this)
       this.popVisible = false
-      this.initMarkerAttribue()
+      this.initMarkerAttribue(this.layerIndex)
       this.isEdittingMarker = false
     },
-    initMarkerAttribue () {
+    initMarkerAttribue (index) {
       this.markerAttribute = { }
-      this.$set(this.markerAttribute, 'layerName', this.layerIndex)
-      this.addMarkerLayerName = this.layerIndex
+      this.$set(this.markerAttribute, 'layerName', index)
+      this.addMarkerLayerName = index
       // this.markerAttribute.layerName = this.layerIndex
-      this.$set(this.markerAttribute, 'valueList', this.initValueList(this.layerList[this.layerIndex].valueKeyList.length))
+      this.$set(this.markerAttribute, 'valueList', this.initValueList(this.layerList[index].valueKeyList.length))
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
     },
     findMarkerById (markerid) {
@@ -569,6 +723,7 @@ export default{
             this.layerList[this.markerLayerIndex].markerList.splice(index, 1)
             this.markerAttribute.color = this.markerColor.color
             this.markerAttribute.fontSize = this.markerColor.fontSize
+            this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
             item = this.initMarkByAttribute(this.markerAttribute)
             this.layerList[layerIndex].markerList.push(this.markerAttribute)
             this.markerList[layerIndex].markers.push(item)
@@ -578,7 +733,7 @@ export default{
         }, this)
       }
 
-      this.initMarkerAttribue()
+      this.initMarkerAttribue(this.layerIndex)
       this.isEdittingMarker = false
     },
     drawDOMByStyle (style) {
@@ -713,11 +868,14 @@ export default{
       // label.direction = 'top'
       // e.target.setLabel(null)
       // e.target.setLabel(label)
+      this.markerColor.color = this.markerAttribute.color
+      this.markerColor.fontSize = this.markerAttribute.fontSize
       this.markerLayerIndex = this.markerAttribute.layerName
       this.isEdittingMarker = true
     },
     addMarkerFunc  (e) {
       console.log(this)
+      this.initMarkerAttribue(this.layerIndex)
       if (!this.isAddingMarker) {
         this.isAddingMarker = true
         let position = [e.lnglat.getLng(), e.lnglat.getLat()]
@@ -774,7 +932,7 @@ export default{
       //   }
       //   return false
       // }, this)
-      this.initMarkerAttribue()
+      this.initMarkerAttribue(this.layerIndex)
       console.log('mapclicked')
       // this.markerAttribute = { }
       // this.markerAttribute.layerName = this.layerIndex
@@ -791,7 +949,7 @@ export default{
     cancelMarker () {
       this.marker.setMap(null)
       this.marker = null
-      this.initMarkerAttribue()
+      this.initMarkerAttribue(this.layerIndex)
       // this.markerAttribute = { }
       // this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
@@ -887,6 +1045,24 @@ export default{
       }
       console.log(list)
       return list
+    },
+    dataManagerLayer: function () {
+      return this.layerList[this.dataLayerIndex]
+    },
+    fieldManagerLayer: function () {
+      return this.layerList[this.fieldLayerIndex]
+    }
+  },
+  watch: {
+    layerList: {
+      handler (newValue, oldValue) {
+        // console.log(newValue)
+        // console.log(this.oldValueKeyList.length)
+        /* eslint-disable-next-line */
+
+        // console.log(oldValue.length)
+      },
+      deep: true
     }
   },
   mounted () {
@@ -901,6 +1077,7 @@ export default{
 
 .main-container{
   display: flex;
+  overflow-x: initial;
 }
 
 .map-container{
@@ -910,7 +1087,7 @@ export default{
     position: relative;
     overflow: hidden;
     margin: 0;
-    font-family: "微软雅黑";
+    /* font-family: "微软雅黑"; */
 }
 
 .control-container{
@@ -1015,6 +1192,14 @@ export default{
     div{
       padding-left: 90px;
     }
+    /deep/ .el-select{
+      padding-left: 0!important;
+    }
+
+    /deep/ .el-input__inner{
+      border: none;
+      padding: 0;
+    }
 }
 
 .marker-form .form-bottom {
@@ -1080,6 +1265,7 @@ export default{
   height: 100%;
   background-color: #fff;
   padding: 0 15px;
+  border: 2px solid #eee; /*no*/
 }
 
 .defaultLayer::after{
@@ -1158,6 +1344,75 @@ export default{
   margin: 2px 3px !important;
 }
 
+.dataManager-container{
+  cursor: default;
+  border: 1px solid #eee; /*no*/
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  height: 300px;
+  z-index: 1000;
+  background-color: #fff;
+  .dataManager-content{
+    overflow: hidden;
+  }
+  .dataManager-top{
+    display: flex;
+    border-bottom: 1px solid #eee;
+    /* justify-content: space-between; */
+    /* line-height: 40px; */
+    padding: 0 15px;
+    .layerName{
+      color: #35b499;
+      font-weight: 700;
+    }
+    .container-title{
+      margin: 10px 15px;
+      font-size: 16px;
+      padding: 6px 5px;
+    }
+    .close-icon{
+      position: absolute;
+      right: 5px;
+      top: 13px;
+      height: 26px;
+      border-radius: 15px;
+      font-size: 20px;
+      line-height: 26px;
+      padding: 0 10px;
+    }
+    button{
+      height: 26px;
+      border-radius: 15px;
+      font-size: 12px;
+      line-height: 26px;
+      margin: 13px 5px;
+      padding: 0 10px
+    }
+    input{
+      height: 26px;
+      margin-top: 13px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 26px;
+      width: 200px;
+      border: 1px solid #ccc;
+    }
+  }
+}
+
+.fieldedit-content{
+  max-height: 500px; /*no*/
+  overflow-y: scroll;
+}
+.fieldedit-bottom{
+  overflow: hidden;
+  border-bottom: 1px solid #eee; /*no*/
+  margin: 5px 0px;
+  padding: 5px 0px;
+}
+
 /deep/ .amap-icon{
   overflow: inherit !important;
 }
@@ -1169,12 +1424,4 @@ export default{
   padding: 0;
 }
 
-/deep/ .el-select{
-  padding-left: 0!important;
-}
-
-/deep/ .el-input__inner{
-  border: none;
-  padding: 0;
-}
 </style>
