@@ -1,11 +1,11 @@
 <template>
 <div class="main-container">
   <el-dialog title="编辑图层" :visible.sync="editLayerDialogVisible">
-      <el-form :model="layer">
+      <el-form>
         <el-form-item label="图层名称" label-width="120px">
           <el-input v-model="layer.label" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item label="默认" label-width="120px">
           <el-checkbox v-model="layer.isDefault">默认图层</el-checkbox>
         </el-form-item>
       </el-form>
@@ -418,7 +418,7 @@
 </div>
 </template>
 <script>
-import deepClone from '../../assets/js/deepcopy.js'
+// import deepClone from '../../assets/js/deepcopy.js'
 
 export default{
   name: 'DingTu',
@@ -451,7 +451,11 @@ export default{
       addMarkerLayerName: 0, // 添加标记点所属图层index
       newLayerIndex: 0,
       searchAddress: '',
-      layer: {},
+      layer: {
+        index: 0,
+        label: '',
+        isDefault: false
+      },
       markerColor: {
         // 目前操作标记点的样式
         color: 'rgb(80, 130, 204)',
@@ -764,10 +768,9 @@ export default{
       this.editLayerDialogVisible = false
     },
     editLayerStart (index) {
-      this.layer = deepClone(this.layerList[index])
+      this.layer.label = this.layerList[index].label
       this.layer.index = index
       this.layer.isDefault = (this.layerIndex === index)
-      console.log(this.layer)
       this.editLayerDialogVisible = true
     },
     setLayerDefault (index) {
