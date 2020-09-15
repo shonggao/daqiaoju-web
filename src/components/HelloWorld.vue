@@ -52,25 +52,39 @@
                   </div>
                 </div>
                 <div id="map" class="map"></div>
+                <div class="address-container">
+                  <div>
+                    <p class="province">{{this.province}}交通厅</p>
+                    <a href="" class="link">https://lbs.amap.com/</a>
+                  </div>
+                  <div>
+                    <p class="province">{{this.province}}建设厅</p>
+                    <a href="" class="link">https://lbs.amap.com/</a>
+                  </div>
+                  <div>
+                    <p class="province">{{this.province}}公安厅</p>
+                    <a href="" class="link">https://lbs.amap.com/</a>
+                  </div>
+                </div>
             </div>
             <div class="rank-container">
               <el-table
                 :data="tableData"
-                stripe
-                style="width: 100%">
+                stripe>
                 <el-table-column
                   type="index"
                   label="排名"
-                  width="180">
+                  width="120">
                 </el-table-column>
                 <el-table-column
                   prop="province"
                   label="省份"
-                  width="180">
+                  width="120">
                 </el-table-column>
                 <el-table-column
                   prop="count"
-                  label="项目数量">
+                  label="项目数量"
+                  width="120">
                 </el-table-column>
               </el-table>
             </div>
@@ -169,7 +183,7 @@
 </template>
 
 <script>
-import option from '../assets/js/map.js'
+// import option from '../assets/js/map.js'
 import deepClone from '../assets/js/deepcopy.js'
 // import '../assets/js/china.js'
 
@@ -252,6 +266,7 @@ export default {
       value1: '',
       value2: '',
       input: '',
+      province: '河南',
       formLabelWidth: '120px',
       dialogFormVisible: false,
       editindex: '',
@@ -462,8 +477,8 @@ export default {
               areaColor: '#2B91B7'
             }
           }
-        },
-        series: option.series
+        }
+        // series: option.series
       }
     }
   },
@@ -505,8 +520,18 @@ export default {
     this.initChart('map', this.options2)
     this.initChart('chart2', this.options3)
     this.myChart['map'].on('click', function (params) {
-      console.log(params)
-    })
+      this.province = params.name
+      // console.log(params)
+      this.options1.series[0].data = [ {value: 335, name: '视频广告1'},
+        {value: 310, name: '视频广告2'},
+        {value: 234, name: '视频广告3'},
+        {value: 135, name: '视频广告4'},
+        {value: 1548, name: '视频广告5'}]
+      this.options1.legend.data = ['视频广告1', '视频广告2', '视频广告3', '视频广告4', '视频广告5']
+      this.options3.series[0].data = [101, 522, 20, 34, 39, 330, 120]
+      this.updateChart('chart1', this.options1)
+      this.updateChart('chart2', this.options3)
+    }, this)
   }
 }
 </script>
@@ -564,6 +589,7 @@ export default {
 
 .map-container-box{
   flex: 3;
+  position: relative;
 }
 
 .rank-container{
@@ -687,5 +713,18 @@ export default {
 
 .page-container{
   margin: 20px 340px;
+}
+
+p.province {
+    margin: 7px 0px;
+}
+
+.address-container{
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  padding: 0 15px;
+  width: 100%;
+  bottom: 0;
 }
 </style>

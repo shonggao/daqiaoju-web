@@ -6,6 +6,17 @@
         <div class="websitetitle">
             郑州市大桥局大数据平台
         </div>
+        <el-dropdown class="usercontainer">
+            <div class="useravatar">
+            </div>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>黄金糕</el-dropdown-item>
+              <el-dropdown-item>狮子头</el-dropdown-item>
+              <el-dropdown-item>螺蛳粉</el-dropdown-item>
+              <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+              <el-dropdown-item divided>蚵仔煎</el-dropdown-item>
+            </el-dropdown-menu>
+        </el-dropdown>
         </el-header>
         <el-container>
         <el-aside width="200px">
@@ -105,6 +116,20 @@ export default {
     background-color: #c0c4cc;
     width: 44px;
     margin-top: 8px;
+    border-radius: 44px;
+}
+
+.usercontainer{
+    position: absolute;
+    right: 50px;
+    margin-top: 8px;
+}
+
+.useravatar{
+    /* float: right; */
+    background-color: #0BB976;
+    width: 44px;
+    height: 44px;
     border-radius: 44px;
 }
 

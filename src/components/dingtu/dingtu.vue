@@ -885,18 +885,17 @@ export default{
     },
     editMarker (layerIndex, markerid) {
       if (this.markerLayerIndex === layerIndex) {
-        this.markerList[layerIndex].markers.find((item, index, arr) => {
+        var markerIndex = this.markerList[layerIndex].markers.findIndex((item) => {
           if (item.getExtData().id === markerid) {
-            item.setMap(null)
-            this.markerAttribute.color = this.markerColor.color
-            this.markerAttribute.fontSize = this.markerColor.fontSize
-            item = this.initMarkByAttribute(this.markerAttribute)
-            this.layerList[layerIndex].markerList[index] = this.markerAttribute
-
             return true
           }
           return false
         }, this)
+        this.markerList[layerIndex].markers[markerIndex].setMap(null)
+        this.markerAttribute.color = this.markerColor.color
+        this.markerAttribute.fontSize = this.markerColor.fontSize
+        this.markerList[layerIndex].markers[markerIndex] = this.initMarkByAttribute(this.markerAttribute)
+        this.layerList[layerIndex].markerList[markerIndex] = this.markerAttribute
       } else {
         this.markerList[this.markerLayerIndex].markers.find((item, index, arr) => {
           if (item.getExtData().id === markerid) {
@@ -922,8 +921,8 @@ export default{
       let icon = document.createElement('i')
       icon.style.color = style.color
       icon.style.fontSize = style.fontSize
-      icon.style.top = (style.fontSize === '30px') ? '4px' : (style.fontSize === '40px') ? '-5px' : '14px'
-      icon.style.left = (style.fontSize === '30px') ? '-6px' : (style.fontSize === '40px') ? '-5px' : '0px'
+      icon.style.top = (style.fontSize === '30px') ? '6px' : (style.fontSize === '40px') ? '-3px' : '14px'
+      icon.style.left = (style.fontSize === '30px') ? '-6px' : (style.fontSize === '40px') ? '-11px' : '-1px'
       icon.style.position = 'absolute'
       icon.className = 'el-icon-location'
       return icon
@@ -946,9 +945,10 @@ export default{
           console.log('根据经纬度查询地址失败')
         }
       })
+      var top = (markerAttribute.fontSize === '30px') ? '-10px' : (markerAttribute.fontSize === '40px') ? '-20px' : '0px'
       marker.setLabel({
         // offset: new this.AMap.Pixel(-4, -20), // 设置文本标注偏移量
-        content: '<div class="markerlabel ifmarkershow"  style="display:none">' + markerAttribute.title + '</div>', // 设置文本标注内容
+        content: '<div class="markerlabel ifmarkershow"  style="display:none; transform: translate(-50%); background-color: #40dcff;color: #303133; padding: 0 5px;border-radius: 3px; position: absolute; left: 10px; top:' + top + ';" >' + markerAttribute.title + '</div>', // 设置文本标注内容
         direction: 'top' // 设置文本标注方位
       })
 
@@ -1065,7 +1065,7 @@ export default{
             size: new this.AMap.Size(53, 68), // 图标大小
             // imageSize: new this.AMap.Size(36, 36),
             image: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
-            imageOffset: new this.AMap.Pixel(-13, -30)
+            imageOffset: new this.AMap.Pixel(-11, -28)
           }),
           position: position,
           offset: new this.AMap.Pixel(-13, -30)
@@ -1099,9 +1099,10 @@ export default{
         position: this.markerAttribute.position
         // offset: new this.AMap.Pixel(-13, -30)
       })
+      var top = (this.markerAttribute.fontSize === '30px') ? '-10px' : (this.markerAttribute.fontSize === '40px') ? '-20px' : '0px'
       this.marker.setLabel({
         // offset: new this.AMap.Pixel(-4, -20), // 设置文本标注偏移量
-        content: '<div class="markerlabel ifmarkershow"  style="display:none">' + this.markerAttribute.title + '</div>', // 设置文本标注内容
+        content: '<div class="markerlabel ifmarkershow"  style="display:none; transform: translate(-50%); background-color: #40dcff;color: #303133; padding: 0 5px;border-radius: 3px; position: absolute; left: 10px; top:' + top + ';" >' + this.markerAttribute.title + '</div>', // 设置文本标注内容
         direction: 'top' // 设置文本标注方位
       })
       this.marker.setExtData({id: this.markerAttribute.id})
