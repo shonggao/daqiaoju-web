@@ -329,7 +329,7 @@
       <div class="marker-content-item">
         <label for="">所属图层</label>
         <div class="self-input">
-          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择" @change="markerLayerIndexChanged">
+          <el-select v-model="markerAttribute.layerName" size="small" clearable placeholder="请选择">
             <el-option
               v-for="(item) in layerNameList"
               :key="item.value"
@@ -651,10 +651,12 @@ export default{
       this.removeMarker(row.layerName, row.id)
     },
     deleteValueKey (index, row) {
-      this.layerList[this.fieldLayerIndex].valueKeyList.splice(index, 1)
       this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
-        item.valueList.splice(index, 1)
+        item[this.layerList[this.fieldLayerIndex].valueKeyList[index].key] = undefined
+        delete item[this.layerList[this.fieldLayerIndex].valueKeyList[index].key]
       })
+      this.layerList[this.fieldLayerIndex].valueKeyList.splice(index, 1)
+
       this.isAddValueKey = false
     },
     addValueKey () {
@@ -665,7 +667,7 @@ export default{
       // this.oldValueKeyList = deepClone(this.fieldManagerLayer.valueKeyList)
       // console.log(JSON.stringify(this.oldValueKeyList) === JSON.stringify(this.fieldManagerLayer.valueKeyList))
       this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
-        item.valueList.push({value: ''})
+        item[this.newValueKey] = ''
       })
       this.layerList[this.fieldLayerIndex].valueKeyList.push({key: this.newValueKey})
       console.log(this.layerList[this.fieldLayerIndex])
@@ -852,7 +854,7 @@ export default{
       this.$set(this.markerAttribute, 'layerName', index)
       this.addMarkerLayerName = index
       // this.markerAttribute.layerName = this.layerIndex
-      this.$set(this.markerAttribute, 'valueList', this.initValueList(this.layerList[index].valueKeyList.length))
+      // this.$set(this.markerAttribute, 'valueList', this.initValueList(this.layerList[index].valueKeyList.length))
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
     },
     findMarkerByIndexID (index, markerid) {
@@ -903,7 +905,7 @@ export default{
             this.layerList[this.markerLayerIndex].markerList.splice(index, 1)
             this.markerAttribute.color = this.markerColor.color
             this.markerAttribute.fontSize = this.markerColor.fontSize
-            this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
+            // this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
             item = this.initMarkByAttribute(this.markerAttribute)
             this.layerList[layerIndex].markerList.push(this.attributeAssign(this.markerAttribute, layerIndex))
             this.markerList[layerIndex].markers.push(item)
@@ -1209,7 +1211,7 @@ export default{
       this.AMap.event.addListener(auto, 'select', this.select, this)// 注册监听，当选中某条记录时会触发
       this.initLayer()
       this.markerAttribute.layerName = this.layerIndex
-      this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
+      // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
     }
     // this.Map.centerAndZoom(new this.AMap.Point(116.404, 39.915), 8)
   },
