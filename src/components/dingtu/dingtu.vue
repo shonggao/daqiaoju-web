@@ -584,6 +584,15 @@ export default{
     }
   },
   methods: {
+    attributeAssign (markerAttribute, layerIndex) {
+      let {id, title, color, fontSize, layerName, location, position} = markerAttribute
+
+      let newMarkerAttribute = {id, title, color, fontSize, layerName, location, position}
+      for (let valueKey of this.layerList[layerIndex].valueKeyList) {
+        newMarkerAttribute[valueKey.key] = markerAttribute[valueKey.key]
+      }
+      return newMarkerAttribute
+    },
     setMarkersStyle () {
       for (var marker of this.$refs.datatable.selection) {
         this.setMarkerStyle(this.dataLayerIndex, marker)
@@ -896,7 +905,7 @@ export default{
             this.markerAttribute.fontSize = this.markerColor.fontSize
             this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
             item = this.initMarkByAttribute(this.markerAttribute)
-            this.layerList[layerIndex].markerList.push(this.markerAttribute)
+            this.layerList[layerIndex].markerList.push(this.attributeAssign(this.markerAttribute, layerIndex))
             this.markerList[layerIndex].markers.push(item)
             return true
           }
@@ -1095,7 +1104,7 @@ export default{
       })
       this.marker.setExtData({id: this.markerAttribute.id})
       // this.marker.setContent(image)
-      this.layerList[this.markerAttribute.layerName].markerList.push(this.markerAttribute)
+      this.layerList[this.markerAttribute.layerName].markerList.push(this.attributeAssign(this.markerAttribute, this.markerAttribute.layerName))
       // this.layerList.find((item, index) => {
       //   if (item.value === this.markerAttribute.layerName) {
       //     item.markerList.push(this.markerAttribute)
@@ -1103,7 +1112,6 @@ export default{
       //   }
       //   return false
       // }, this)
-      console.log('mapclicked')
       // this.markerAttribute = { }
       // this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
