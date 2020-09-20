@@ -231,12 +231,13 @@ export default{
 }
 </script>
 <style lang="scss" scoped>
-@import '../../assets/css/index.css';
-@import '../../assets/css/page.css';
+@import '../../assets/css/index.scss';
+@import '../../assets/css/page.scss';
 
 .filter-container{
     width: 100%;
     margin: 10px;
+    color: white;
     /* height: 100px; */
 }
 
@@ -253,6 +254,12 @@ export default{
 .el-radio-button{
     margin: 0 20px;
     border: 1px solid transparent;
+}
+
+.filter-type{
+
+  color: white;
+
 }
 
 /deep/ .el-radio-button__inner{

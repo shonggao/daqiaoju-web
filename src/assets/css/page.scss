@@ -1,56 +1,52 @@
-.filter-container-box {
+.filter-container-box{
   height: 60px;
   position: relative;
 }
 
-.program-container-box {
-  min-width: 1400px;
-  /*no*/
-  max-width: 1900px;
-  /*no*/
-  height: 650px;
-  border: 1px solid transparent;
-  /*no*/
+.program-container-box{
+  min-width: 1400px; /*no*/
+  max-width: 1900px; /*no*/
+  // height: 650px;
+  border: 1px solid transparent;/*no*/
   display: flex;
 }
 
-.input-box {
+.input-box{
   margin: 0 20px;
   margin-top: 10px;
   width: 400px;
 }
 
-.button-box {
+.button-box{
   height: 40px;
   margin-top: 10px;
 }
 
-.tooltip-container {
+.tooltip-container{
   display: flex;
   position: absolute;
   right: 10px;
   top: 10px;
 }
 
-.tooltip {
+.tooltip{
   margin-right: 20px;
   margin-left: 40px;
 }
 
-.program-table-container {
+.program-table-container{
   /* width: 100%; */
   padding: 10px 260px;
   flex: 1;
   overflow-x: hidden;
 }
 
-.program-table {
+.program-table{
   width: 20.37037rem;
-  min-width: 1000px;
-  /*no*/
+  min-width: 1000px; /*no*/
   /* margin: 10px 260px; */
 }
 
-.page-container {
+.page-container{
   margin: 20px 340px;
 }

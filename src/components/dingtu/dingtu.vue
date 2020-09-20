@@ -108,8 +108,38 @@
   </div>
   <div id="map" class="map-container">
     <div class="search-container">
-      <input id="addressinput" class="input-box" v-model="searchAddress" placeholder="请输入要搜索的地点">
-      <button class='btn'><i class="iconfont el-icon-search"></i></button>
+      <input id="addressinput" class="input-box" v-model="searchAddress" placeholder="请输入要搜索的地点" @keyup.enter="searchPoi(0)">
+      <div class="btn">
+        <button  v-if="isClearAble" @click="clearInput"><i class="iconfont el-icon-close"></i></button>
+        <button ><i class="iconfont el-icon-search"></i></button>
+      </div>
+      <div class="search-res-container" v-if="isSearchingPoi">
+        <div class="search-type">
+          <el-button round @click="searchType = 1">地点搜索</el-button>
+          <el-button round @click="searchType = 0">标记点搜索</el-button>
+        </div>
+        <div v-if="searchType" v-loading="loading">
+          <div class="search-res"  v-for="(item,index) in searchPoiRes" :key="index" @click="addMarkerByPoi(item.location)">
+            <i class="el-icon-location"></i>
+            <div class="address-container">
+              <p>{{item.city}}</p>
+              <span>{{item.address}}</span>
+            </div>
+          </div>
+          <div class="search-more" @click="searchPoi(1)">
+            加载更多
+          </div>
+        </div>
+        <div v-else>
+          <div class="search-res"  v-for="(item,index) in searchPoiRes" :key="index">
+            <i class="el-icon-location"></i>
+            <div class="address-container">
+              <p>{{item.address}}</p>
+              <span>{{item.city}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="show-menu-container" @click.stop="showMenuFun">
       <a class="show-menu-button">
@@ -131,7 +161,6 @@
         ref='datatable'
         :data="dataManagerLayer.markerList">
         <el-table-column
-          fixed
           type="selection"
           width="55">
         </el-table-column>
@@ -184,8 +213,7 @@
     <el-dialog :title="fieldManagerLayer.label + '- 字段管理'" :visible.sync="isFieldEdit">
       <div class="fieldedit-content">
       <el-table
-        :data="fieldManagerLayer.valueKeyList"
-        border>
+        :data="fieldManagerLayer.valueKeyList">
       <el-table-column
         label="字段名称"
         prop="key"
@@ -222,14 +250,6 @@
       </div>
       </el-dialog>
     </el-dialog>
-    <!-- <div class="fieldedit-container" v-if="isFieldEdit">
-      <div class="fieldedit-top">
-        <p class="layerName">{{fieldManagerLayer.label}}</p>
-        <p class="container-title">字段管理</p>
-        <i class="el-icon-close close-icon" @click="isFieldEdit = false"></i>
-      </div>
-      <div class="fieldedit-content"></div>
-    </div> -->
   </div>
   <div class="control-container">
     <el-button-group>
@@ -267,7 +287,7 @@
       <div class="marker-content-item">
         <label for="">当前位置</label>
         <div class="self-input">
-          <input type="text" class="noborder-input" v-model="markerAttribute.location" >
+          <input type="text" class="noborder-input" v-model="markerAttribute.location" readonly>
         </div>
       </div>
       <div class="marker-content-item">
@@ -348,7 +368,7 @@
       <div class="marker-content-item">
         <label for="">当前位置</label>
         <div class="self-input">
-          <input type="text" class="noborder-input" v-model="markerAttribute.location" >
+          <input type="text" class="noborder-input" v-model="markerAttribute.location" readonly>
         </div>
       </div>
       <div class="marker-content-item">
@@ -436,6 +456,7 @@ export default{
       changeMarkersLayerDialogVisible: false,
       deleteMarkersDialogVisible: false,
       setMarkersStyleDialogVisible: false,
+      isSearchingPoi: false,
       polylineButtonTitle: '测距',
       polygonButtonTitle: '面积测量',
       isChooseColor: false, // 是否选择标记填样式
@@ -443,14 +464,23 @@ export default{
       dataLayerIndex: 0, // 显示数据管理的图层index
       isDataManager: false, // 数据管理窗体是否显示
       isFieldEdit: false,
+      loading: false,
       fieldLayerIndex: 0,
       showLabelButtonTitle: '显示标题',
       isShowLabel: false, // 是否显示标题
+      isClearAble: false,
       newValueKey: '',
       isAddValueKey: false,
       addMarkerLayerName: 0, // 添加标记点所属图层index
       newLayerIndex: 0,
       searchAddress: '',
+      searchType: 1,
+      searchPoiRes: [],
+      poiResultPage: {
+        pageIndex: 0,
+        pageSize: 10,
+        count: 0
+      },
       layer: {
         index: 0,
         label: '',
@@ -584,6 +614,53 @@ export default{
     }
   },
   methods: {
+    clearInput () {
+      this.searchAddress = ''
+      // this.isClearAble = false
+      this.isSearchingPoi = false
+    },
+    searchPoi (isnext) {
+      if (!isnext) {
+        this.poiResultPage.pageIndex = 1
+        this.placeSearch.setPageIndex(1)
+        this.searchPoiRes = []
+      }
+      console.log(this.searchPoiRes)
+      var vue = this
+      // var searchresult = null
+      this.placeSearch.search(this.searchAddress, function (status, result) {
+        console.log('loading')
+        console.log(vue.loading)
+        if (result.poiList.pois.length > 0) {
+          result.poiList.pois.forEach(function (item) {
+            item.province = item.pname
+            item.city = item.cityname
+            item.district = item.adname
+            item.address = item.pname + item.cityname + item.adname + item.address
+          })
+          // searchresult = result.poiList.pois
+        }
+        vue.poiResultPage.count = result.poiList.count
+        vue.poiResultPage.pageIndex += 1
+        // vue.placeSearch.setPageIndex(vue.poiResultPage.pageIndex)
+        vue.searchPoiRes.push(...result.poiList.pois)
+        vue.Map.setCenter(result.poiList.pois[0].location)
+        vue.$nextTick(function () {
+          console.log('complete')
+          console.log(this.loading)
+          this.loading = false
+        })// for (var i = 0; i < result.poiList.pois.length; i++) {
+        //   vue.$set(vue.searchPoiRes, i, result.poiList.pois[i])
+        // }
+      })
+      console.log('complete')
+      // if (searchresult) {
+      //   this.searchPoiRes.push(...searchresult)
+      // }
+
+      this.loading = true
+      this.isSearchingPoi = true
+    },
     attributeAssign (markerAttribute, layerIndex) {
       let {id, title, color, fontSize, layerName, location, position} = markerAttribute
 
@@ -1054,12 +1131,23 @@ export default{
       this.markerLayerIndex = this.markerAttribute.layerName
       this.isEdittingMarker = true
     },
-    addMarkerFunc  (e) {
-      console.log(this)
+    addMarkerByPoi (location) {
+      if (this.isAddingMarker) {
+        this.cancelMarker()
+      }
+      this.addMarkerFunc(location, true)
+    },
+    addMarkerFunc  (e, isSearchAdd) {
+      let position
+      if (isSearchAdd) {
+        position = [e.lng, e.lat]
+      } else {
+        position = [e.lnglat.getLng(), e.lnglat.getLat()]
+      }
+
       this.initMarkerAttribue(this.layerIndex)
       if (!this.isAddingMarker) {
         this.isAddingMarker = true
-        let position = [e.lnglat.getLng(), e.lnglat.getLat()]
         this.marker = new this.AMap.Marker({
           icon: new this.AMap.Icon({
             size: new this.AMap.Size(53, 68), // 图标大小
@@ -1076,7 +1164,7 @@ export default{
         this.$set(this.markerAttribute, 'position', position)
         let vue = this
         this.geocoder.getAddress(position, function (status, result) {
-          console.log(vue.isAddingMarker)
+          // console.log(vue.isAddingMarker)
           if (status === 'complete' && result.regeocode) {
             vue.$set(vue.markerAttribute, 'location', result.regeocode.formattedAddress)
             // vue.markerAttribute.location = result.regeocode.formattedAddress
@@ -1084,6 +1172,8 @@ export default{
             console.log('根据经纬度查询地址失败')
           }
         })
+
+        this.Map.on('click', this.cancelclick, this)
       }
     },
     saveMarker () {
@@ -1125,8 +1215,12 @@ export default{
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
+      this.Map.off('click', this.cancelclick, this)
       this.markerButtonTitle = '画点'
       this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
+    },
+    cancelclick () {
+      this.cancelMarker(); console.log('cancelclick')
     },
     cancelMarker () {
       this.marker.setMap(null)
@@ -1138,6 +1232,7 @@ export default{
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
+      this.Map.off('click', this.cancelclick, this)
       this.markerButtonTitle = '画点'
       this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
     },
@@ -1195,21 +1290,31 @@ export default{
       this.Map = new this.AMap.Map('map', {
         resizeEnable: true,
         center: [116.404, 39.915],
+        mapStyle: 'amap://styles/blue',
         zoom: 8
       })
       this.mouseTool = new this.AMap.MouseTool(this.Map)
+      var vue = this
+      this.Map.getCity(function (result) {
+        vue.citycode = result.citycode
+      })
       this.geocoder = new this.AMap.Geocoder({
-        city: '010', // 城市设为北京，默认：“全国”
+        city: this.citycode, // 城市设为北京，默认：“全国”
         radius: 1000 // 范围，默认：500
       })
-      var autoOptions = {
-        input: 'addressinput'
-      }
-      var auto = new this.AMap.Autocomplete(autoOptions)
+      // var autoOptions = {
+      //   input: 'addressinput'
+      // }
+      // var auto = new this.AMap.Autocomplete(autoOptions)
+
       this.placeSearch = new this.AMap.PlaceSearch({
-        map: this.Map
+        // map: this.Map,
+        extensions: 'all',
+        pageSize: this.poiResultPage.pageSize,
+        pageIndex: this.poiResultPage.pageIndex,
+        city: this.citycode
       }) // 构造地点查询类
-      this.AMap.event.addListener(auto, 'select', this.select, this)// 注册监听，当选中某条记录时会触发
+      // this.AMap.event.addListener(auto, 'select', this.select, this)// 注册监听，当选中某条记录时会触发
       this.initLayer()
       this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
@@ -1225,7 +1330,7 @@ export default{
       for (var layer of this.layerList) {
         list.push({value: layer.value, label: layer.label})
       }
-      console.log(list)
+      // console.log(list)
       return list
     },
     dataManagerLayer: function () {
@@ -1245,6 +1350,16 @@ export default{
         // console.log(oldValue.length)
       },
       deep: true
+    },
+    searchAddress: {
+      handler (newValue, oldValue) {
+        if (newValue !== '') {
+          this.isClearAble = true
+        } else {
+          this.isClearAble = false
+          this.isSearchingPoi = false
+        }
+      }
     }
   },
   mounted () {
@@ -1255,11 +1370,12 @@ export default{
 }
 </script>
 <style lang="scss" scoped>
-@import '../../assets/css/index.css';
+@import '../../assets/css/index.scss';
 
 .main-container{
   display: flex;
   overflow-x: initial;
+  background: rgb(11, 21, 49);
 }
 
 .map-container{
@@ -1280,7 +1396,8 @@ export default{
 }
 
 .control-button:hover{
-  color: red;
+  color: #409EFF;
+  border-color: rgba(250,250,250,0.5);
 }
 
 .search-container{
@@ -1289,19 +1406,20 @@ export default{
   left: 20px;
   z-index: 1000;
   width: 300px;
-  overflow: hidden;
   .btn{
     height: 33px;
-    background: none;
-    font-size: 17px;
-    color: grey;
     position: absolute;
     right: 0;
     top: 4px;
-    outline: none;
     padding: 0 5px;
-    line-height: 33px;
-    border: none;
+    button{
+      background: none;
+      font-size: 17px;
+      border: none;
+      line-height: 33px;
+      outline: none;
+      color: grey;
+    }
   }
 }
 
@@ -1380,7 +1498,12 @@ export default{
 
     /deep/ .el-input__inner{
       border: none;
+      color:rgb(0, 0, 0);
       padding: 0;
+    }
+
+    /deep/ .el-select .el-input .el-select__caret{
+      color: #000000;
     }
 }
 
@@ -1394,6 +1517,15 @@ export default{
     text-align: right;
     padding: 0 10px;
     background: #fff;
+    /deep/ .el-button--default{
+      border-color: #409EFF;
+      color: black;
+    }
+    /deep/ .el-button.is-plain:hover, .el-button.is-plain:focus {
+      background: transparent;
+      border-color: #409EFF;
+      color: #409EFF;
+    }
 }
 
 .marker-content .margin-top {
@@ -1445,9 +1577,10 @@ export default{
   flex: 1;
   min-width: 240px;
   height: 100%;
-  background-color: #fff;
+  background-color: rgb(3,52,71);
+  color: RGB(255,255,255,0.8);
   padding: 0 15px;
-  border: 2px solid #eee; /*no*/
+  border: 2px solid rgb(49, 76, 147); /*no*/
 }
 
 .defaultLayer::after{
@@ -1457,7 +1590,7 @@ export default{
   font-size: 12px; /*no*/
   text-align: center;
   border-radius: 2px; /*no*/
-  padding: 0 6px;
+  padding: 1px 6px;
   margin-left: 3px;
 }
 
@@ -1503,7 +1636,7 @@ export default{
     /* left: 300px; */
     margin-top: -50px;
     z-index: 1099;
-    background: rgba(0,0,0,.38);
+    background: rgba(255, 255, 255, 0.68);
     width: 12px; /*no*/
     height: 100px; /*no*/
     line-height: 100px; /*no*/
@@ -1534,7 +1667,7 @@ export default{
   bottom: 0;
   left: 0;
   z-index: 1000;
-  background-color: #fff;
+  /* background-color: rgb(11, 21, 49); */
   .dataManager-content{
     overflow: auto;
     position: relative;
@@ -1562,9 +1695,11 @@ export default{
       margin: 10px 15px;
       font-size: 16px;
       padding: 6px 5px;
+      color: #ffffff;
     }
     .close-icon{
       position: absolute;
+      color: white;
       right: 5px;
       top: 13px;
       height: 26px;
@@ -1595,18 +1730,18 @@ export default{
 
 .fieldedit-content{
   max-height: 500px; /*no*/
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .fieldedit-bottom{
   overflow: hidden;
-  border-bottom: 1px solid #eee; /*no*/
+  /* border-bottom: 1px solid #eee; no */
   margin: 5px 0px;
   padding: 5px 0px;
 }
 
 .marker-style{
   height: 60px;
-  background: #fff;
+  background: transparent;
   border-bottom: 1px solid #eee;
   overflow: hidden;
   font-size: 12px;
@@ -1619,7 +1754,7 @@ export default{
   }
   button{
     border: none;
-    background-color: transparent;
+    background-color: rgb(3,52,71);
   }
   .marker-custom-icon {
     width: 0.555556rem !important;
@@ -1643,4 +1778,49 @@ export default{
   padding: 0;
 }
 
+.search-res-container{
+  background-color: #fff;
+  max-height: 600px;
+  overflow: auto;
+  cursor: pointer;
+  .search-more{
+    font-weight: 700;
+    font-size: 24px;
+    color: black;
+    text-align: center;
+    &:hover{
+      color: #409EFF;
+    }
+  }
+  .search-type{
+      padding: 10px;
+      /deep/ .el-button{
+        color: black;
+      }
+      /deep/ .el-button:hover, .el-button:focus {
+        color: #409EFF;
+      }
+    }
+  .search-res{
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    .address-container {
+      margin: 7px;
+    }
+    i{
+      font-size: 30px;
+      color: pink;
+      margin: auto 3px;
+    }
+    p{
+      font-size: 16px;
+      margin: 6px 0;
+
+    }
+    span{
+      color: #bbb;
+      font-size: 12px;
+    }
+  }
+}
 </style>

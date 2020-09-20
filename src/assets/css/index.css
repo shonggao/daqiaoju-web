@@ -1,20 +1,27 @@
-.main-container{
-    min-width: 1400px; /*no*/
-    max-width: 1900px; /*no*/
-    overflow-x: hidden;
-    position: relative;
-    height: 100%;
-    /* justify-content:space-around; */
+.main-container {
+  min-width: 1400px;
+  /*no*/
+  max-width: 1900px;
+  /*no*/
+  overflow-x: hidden;
+  position: relative;
+  height: 100%;
+  /* justify-content:space-around; */
 }
 
-.line{
-    height: 1px;
-    margin: 0 20px;
-    border-bottom: 2px solid #EEEEEE; /*no*/
+.line {
+  height: 1px;
+  margin: 0 20px;
+  border-bottom: 2px solid #EEEEEE;
+  /*no*/
 }
 
-.container{
-    background-color: rgb(255, 255, 255);
-    margin: 10px;
-    border-radius: 4px;  /*no*/
+.container {
+  background-color: #0b1531;
+  border: 1px rgba(49, 76, 147, 0.6) solid;
+  box-shadow: 0px 0px 10px 2px rgba(255, 255, 255, 0.1) inset;
+  /* background-color: rgb(255, 255, 255); */
+  margin: 10px;
+  border-radius: 4px;
+  /*no*/
 }

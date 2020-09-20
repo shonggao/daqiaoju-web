@@ -1,39 +1,53 @@
 <template>
   <div class="hello">
     <el-dialog title="修改项目信息" :visible.sync="dialogFormVisible">
-        <el-form :model="form">
-          <el-form-item label="姓名" :label-width="formLabelWidth">
-            <el-input v-model="form.name" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="日期" :label-width="formLabelWidth">
-            <el-date-picker
-              v-model="form.date"
-              type="date"
-              value-format="yyyy-MM-dd"
-              placeholder="选择日期">
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="省份" :label-width="formLabelWidth">
-            <el-input v-model="form.province" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="市区" :label-width="formLabelWidth">
-            <el-input v-model="form.city" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="地址" :label-width="formLabelWidth">
-            <el-input v-model="form.address" autocomplete="off"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="editFrom">确 定</el-button>
-        </div>
+      <el-form :model="form">
+        <el-form-item label="姓名" :label-width="formLabelWidth">
+          <el-input v-model="form.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="日期" :label-width="formLabelWidth">
+          <el-date-picker
+            v-model="form.date"
+            type="date"
+            value-format="yyyy-MM-dd"
+            placeholder="选择日期">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="省份" :label-width="formLabelWidth">
+          <el-input v-model="form.province" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="市区" :label-width="formLabelWidth">
+          <el-input v-model="form.city" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="地址" :label-width="formLabelWidth">
+          <el-input v-model="form.address" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editFrom">确 定</el-button>
+      </div>
     </el-dialog>
     <div class="main-container">
       <div class="container map-container">
         <p class="title">全国项目分布图</p>
         <div class="line"></div>
         <div class="content-container-box">
-            <div class="map-container-box">
+            <div class="chart-container-box">
+              <div class="container chart-container info-container">
+                <p class="title">项目分类</p>
+                <div class="line"></div>
+                <div id="chart1" class="chart"></div>
+                <div class="info-footer"></div>
+              </div>
+              <div class="container chart-container info-container">
+                <p class="title">投资金额分布情况</p>
+                <div class="line"></div>
+                <div id="chart2" class="chart"></div>
+                <div class="info-footer"></div>
+              </div>
+            </div>
+            <div class="map-container-box container">
                 <div class="info-container-box">
                   <div class="info-container">
                     <div class="title-container">总投资</div>
@@ -52,22 +66,45 @@
                   </div>
                 </div>
                 <div id="map" class="map"></div>
-                <div class="address-container">
-                  <div>
-                    <p class="province">{{this.province}}交通厅</p>
-                    <a href="" class="link">https://lbs.amap.com/</a>
+                <div class="info-container-box" style="bottom: 0">
+                  <div class="info-container" style="display: flex; justify-content: center">
+                    <div>
+                      <p class="province">{{this.province}}交通厅</p>
+                      <a href="" class="link">https://lbs.amap.com/</a>
+                      <div class="info-footer"></div>
+                    </div>
                   </div>
-                  <div>
-                    <p class="province">{{this.province}}建设厅</p>
-                    <a href="" class="link">https://lbs.amap.com/</a>
+                  <div class="info-container" style="display: flex; justify-content: center">
+                    <div>
+                      <p class="province">{{this.province}}建设厅</p>
+                      <a href="" class="link">https://lbs.amap.com/</a>
+                      <div class="info-footer"></div>
+                    </div>
                   </div>
-                  <div>
-                    <p class="province">{{this.province}}公安厅</p>
-                    <a href="" class="link">https://lbs.amap.com/</a>
+                  <div class="info-container" style="display: flex; justify-content: center">
+                    <div>
+                      <p class="province">{{this.province}}公安厅</p>
+                      <a href="" class="link">https://lbs.amap.com/</a>
+                      <div class="info-footer"></div>
+                    </div>
                   </div>
                 </div>
             </div>
-            <div class="rank-container">
+            <div class="chart-container-box">
+              <div class="container chart-container info-container">
+                <p class="title">项目分类</p>
+                <div class="line"></div>
+                <div id="chart3" class="chart"></div>
+                <div class="info-footer"></div>
+              </div>
+              <div class="container chart-container info-container">
+                <p class="title">投资金额分布情况</p>
+                <div class="line"></div>
+                <div id="chart4" class="chart"></div>
+                <div class="info-footer"></div>
+              </div>
+            </div>
+            <!-- <div class="rank-container">
               <el-table
                 :data="tableData"
                 stripe>
@@ -87,19 +124,7 @@
                   width="120">
                 </el-table-column>
               </el-table>
-            </div>
-        </div>
-      </div>
-      <div class="chart-container-box">
-        <div class="container chart-container">
-          <p class="title">项目分类</p>
-          <div class="line"></div>
-          <div id="chart1" class="chart"></div>
-        </div>
-        <div class="container chart-container">
-          <p class="title">投资金额分布情况</p>
-          <div class="line"></div>
-          <div id="chart2" class="chart"></div>
+            </div> -->
         </div>
       </div>
     </div>
@@ -425,13 +450,14 @@ export default {
         ]
       },
       options2: {
-        backgroundColor: '#fff',
+        backgroundColor: 'rgb(11, 21, 49)',
         title: {
           text: '模拟航线',
           subtext: '数据纯属虚构',
           left: 'center',
           textStyle: {
-            color: '#000'
+            fontWeight: '700',
+            color: '#fff'
           }
         },
         tooltip: {
@@ -469,12 +495,12 @@ export default {
           roam: true,
           itemStyle: {
             normal: {
-              areaColor: '#C7F6D7',
+              areaColor: '#2B91B7',
               borderColor: '#195BB9',
               borderWidth: 1
             },
             emphasis: {
-              areaColor: '#2B91B7'
+              areaColor: '#2F4554'
             }
           }
         }
@@ -519,6 +545,8 @@ export default {
     this.initChart('chart1', this.options1)
     this.initChart('map', this.options2)
     this.initChart('chart2', this.options3)
+    this.initChart('chart3', this.options1)
+    this.initChart('chart4', this.options3)
     this.myChart['map'].on('click', function (params) {
       this.province = params.name
       // console.log(params)
@@ -538,14 +566,16 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import '../assets/css/index.css';
+@import '../assets/css/index.scss';
+
+@import '../assets/css/variables.scss';
 .main-container{
   display: flex;
 }
 
 .map-container{
   flex: 2;
-  height: 800px;
+  /* height: 800px; */
 }
 
 .chart-container-box{
@@ -554,25 +584,26 @@ export default {
 
 .chart-container{
   height: 390px;
-  border-top: 1px solid transparent;
+  /* border-top: 1px solid transparent; */
 }
 
 .filter-container{
   height: 60px;
   position: relative;
+  color: #fff;
 }
 
 .program-container-box{
   min-width: 1400px; /*no*/
   max-width: 1900px; /*no*/
-  height: 650px;
+  /* height: 650px; */
   border: 1px solid transparent;/*no*/
   display: flex;
 }
 
 .title{
   margin: 15px 21px;
-  color: black;
+  color: $primary-text-color;
   font-weight: 600;
   font-size: 20px
 }
@@ -584,11 +615,14 @@ export default {
 .info-container-box{
   display: flex;
   /* flex: 3; */
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
   padding: 10px 20px;
 }
 
 .map-container-box{
-  flex: 3;
+  flex: 2;
   position: relative;
 }
 
@@ -601,8 +635,9 @@ export default {
 
 .info-container{
   position: relative;
+  color: #fff;
   flex:1;
-  height: 115px;
+  /* height: 115px; */
   margin: 15px;
 }
 .info-container:before{
@@ -661,6 +696,7 @@ export default {
   font-size: 22px;
   font-weight: 600;
   margin-top: 12px;
+  margin-bottom: 24px;
 }
 
 .chart{
@@ -671,9 +707,9 @@ export default {
 
 .map{
   width: 100%;
-  height: 550px;
+  height: 100%;
   /* background: pink; */
-  margin: 0 15px;
+  /* margin: 0 15px; */
 }
 
 .input-box{
@@ -717,6 +753,7 @@ export default {
 
 p.province {
     margin: 7px 0px;
+    text-align: center;
 }
 
 .address-container{
@@ -726,5 +763,9 @@ p.province {
   padding: 0 15px;
   width: 100%;
   bottom: 0;
+}
+
+.link{
+  color: #fff;
 }
 </style>

@@ -5,6 +5,7 @@ import DingTu from '@/components/dingtu/dingtu'
 import Announcement from '@/components/xiangmuxinxi/announcement'
 import Login from '@/components/login'
 import MianView from '@/components/mainview'
+import Register from '@/components/register'
 
 Vue.use(Router)
 
@@ -13,6 +14,11 @@ export default new Router({
     {
       path: '/',
       redirect: '/login'
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
     },
     {
       path: '/login',

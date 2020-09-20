@@ -1,0 +1,107 @@
+@import './variables.scss';
+
+$--color-white: transparent;
+// $--background-color-base: transparent;
+
+
+$--color-text-primary: #ffffff;
+$--color-text-regular: #ffffff;
+$--color-text-secondary: #ffffff;
+$--color-text-placeholder: #ffffff;
+
+// $--color-primary: black;
+
+$--table-row-hover-background-color: #909399;
+
+$--button-default-font-color: #ffffff;
+
+$--button-primary-font-color: #ffffff;
+
+$--button-success-font-color: #ffffff;
+
+$--button-danger-font-color: #FFFFFF;
+
+$--menu-background-color: #909399;
+$--menu-item-font-color: #FFFFFF;
+
+$--datepicker-active-color: #409EFF;
+
+$--datepicker-off-font-color: #C0C4CC;
+$--table-border-color: transparent;
+
+// $--popup-modal-background-color: #fff;
+
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+
+.el-select-dropdown__list {
+    background-color: white;
+
+    .el-select-dropdown__item {
+        color: black;
+    }
+}
+
+
+@import "~element-ui/packages/theme-chalk/src/index";
+
+.el-popper{
+    background-color: white;
+    color: black;
+}
+
+.el-notification {
+    background-color: white;
+    
+    .el-notification__group {
+        .el-notification__title {
+            color: black;
+        }
+
+        .el-notification__content {
+            color: black;
+        }
+
+        .el-notification__closeBtn {
+            color: black;
+        }
+    }
+}
+.el-date-picker{
+    background: border-box;
+    color: white;    
+}
+
+
+.el-date-table td.current:not(.disabled) span {
+    color: white;
+}
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: #409EFF;
+    color: #ffffff;
+}
+.el-dialog {
+    background: RGB(64,158,230,0.7);
+}
+.el-dialog__headerbtn .el-dialog__close {
+    color: white;
+}
+
+.el-dropdown-menu {
+    background-color: white;
+
+    .el-dropdown-menu__item {
+        color: black;
+    }
+}
+
+
+.el-radio-button__orig-radio:checked + .el-radio-button__inner {
+    color: #ffffff;
+}
+body {
+	margin: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

@@ -1,16 +1,16 @@
 <template>
     <div class="login-container">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px" class="login-form">
-            <h2 class="login-title">管理系统</h2>
+            <h2 class="login-title">大桥局大数据平台</h2>
             <el-form-item label="用户名"  prop="username">
                 <el-input v-model="form.username"></el-input>
             </el-form-item>
             <el-form-item label="密码" prop="password" >
                 <el-input v-model="form.password" type="password" show-password></el-input>
             </el-form-item>
-
             <el-form-item>
                 <el-button type="primary" @click="submitForm('form')">登录</el-button>
+                <el-button @click="register()">注册</el-button>
             </el-form-item>
         </el-form>
     </div>
@@ -53,6 +53,9 @@ export default{
           return false
         }
       }, this)
+    },
+    register () {
+      this.$router.push('./register')
     }
   }
 }
@@ -61,7 +64,7 @@ export default{
 .login-form {
   width: 350px;
   margin: 160px auto; /* 上下间距160px，左右自动居中*/
-  background-color: RGB(255, 255, 255, 0.8); /* 透明背景色 */
+  background-color: RGB(64,158,230,0.7); /* 透明背景色 */
   padding: 30px;
   border-radius: 20px; /* 圆角 */
 }
@@ -71,7 +74,11 @@ export default{
   position: absolute;
   width: 100%;
   height: 100%;
-  background: black;
+  /* background: black; */
+  background-image: url('../assets/img/timg.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: 0 0 2px #eee;
 }
 
 /* 标题 */
