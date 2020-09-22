@@ -38,12 +38,15 @@
                         <span>项目信息</span>
                     </template>
                         <router-link class="router" to="/main/quanguotouzi">
-                        <el-menu-item index="1-1">全国项目投资</el-menu-item>
+                            <el-menu-item index="1-1">全国项目投资</el-menu-item>
                         </router-link>
                         <router-link class="router" to="/main/announcement">
-                        <el-menu-item index="1-2">项目公告</el-menu-item>
+                            <el-menu-item index="1-2">项目公告</el-menu-item>
                         </router-link>
-                        <el-menu-item index="1-3">微信公众平台信息</el-menu-item>
+                        <router-link class="router" to="/main/weixinarticle">
+                            <el-menu-item index="1-3">微信公众平台信息</el-menu-item>
+                        </router-link>
+                        <!-- <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
                         <!-- <el-menu-item index="1-4-1">选项1</el-menu-item> -->
                     </el-submenu>
                     <el-submenu index="2">

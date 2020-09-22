@@ -209,11 +209,11 @@
 
 <script>
 // import option from '../assets/js/map.js'
-import deepClone from '../assets/js/deepcopy.js'
+import deepClone from '../../assets/js/deepcopy.js'
 // import '../assets/js/china.js'
 
 export default {
-  name: 'HelloWorld',
+  name: 'quanguptouzi',
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
@@ -566,9 +566,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@import '../assets/css/index.scss';
+@import '../../assets/css/index.scss';
 
-@import '../assets/css/variables.scss';
+@import '../../assets/css/variables.scss';
+@import '../../assets/css/radio.scss';
 .main-container{
   display: flex;
 }

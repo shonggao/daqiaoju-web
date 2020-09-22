@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import QuanGuoTouZi from '@/components/xiangmuxinxi/quanguotouzi'
 import DingTu from '@/components/dingtu/dingtu'
 import Announcement from '@/components/xiangmuxinxi/announcement'
 import Login from '@/components/login'
 import MianView from '@/components/mainview'
 import Register from '@/components/register'
+import WeixinArticle from '@/components/xiangmuxinxi/weixinarticle'
 
 Vue.use(Router)
 
@@ -32,8 +33,8 @@ export default new Router({
       children: [
         {
           path: 'quanguotouzi',
-          name: 'HelloWorld',
-          component: HelloWorld
+          name: 'quanguotouzi',
+          component: QuanGuoTouZi
         },
         {
           path: '',
@@ -48,6 +49,11 @@ export default new Router({
           path: 'announcement',
           name: 'announcement',
           component: Announcement
+        },
+        {
+          path: 'weixinarticle',
+          name: 'weixinarticle',
+          component: WeixinArticle
         }
       ]
     }

@@ -225,6 +225,9 @@
         <template slot-scope="scope">
           <el-button
           size="mini"
+          @click="editValueKey(scope.$index, scope.row)">编辑</el-button>
+          <el-button
+          size="mini"
           type="danger"
           @click="deleteValueKey(scope.$index, scope.row)">删除</el-button>
         </template>

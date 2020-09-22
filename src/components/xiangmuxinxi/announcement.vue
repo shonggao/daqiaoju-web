@@ -42,6 +42,7 @@
             <div class="province-filter">
                 <p class="filter-type" style="min-width: 40px">省份：</p>
                 <el-radio-group v-model="province">
+                    <el-radio-button label="全部"></el-radio-button>
                     <el-radio-button label="河南"></el-radio-button>
                     <el-radio-button label="河北"></el-radio-button>
                     <el-radio-button label="北京"></el-radio-button>
@@ -132,8 +133,8 @@ export default{
   name: 'announcement',
   data () {
     return {
-      announcementType: '',
-      province: '',
+      announcementType: '招标公告',
+      province: '全部',
       tableData1: [{
         date: '2016-05-03',
         name: '王小虎',
@@ -251,19 +252,18 @@ export default{
     padding: 4px 25px;
 }
 
-.el-radio-button{
-    margin: 0 20px;
-    border: 1px solid transparent;
-}
-
 .filter-type{
 
   color: white;
 
 }
-
 /deep/ .el-radio-button__inner{
     border: none !important;
     border-radius: 0.074074rem !important;
+}
+
+/deep/ .el-radio-button{
+    margin: 0 20px;
+    border: 1px solid transparent;
 }
 </style>
