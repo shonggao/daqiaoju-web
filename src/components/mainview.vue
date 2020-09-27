@@ -64,8 +64,19 @@
                         <i class="el-icon-menu"></i>
                         <span>钉图标记</span>
                     </template>
-                        <router-link class="router" to="/main/dingtu">
-                        <el-menu-item index="3-1" >钉图标记</el-menu-item>
+                        <router-link v-for="(item,index) in mapNameList" class="router" :to="'/main/dingtu/' + index" :key="index">
+                            <el-menu-item :index="'3-' + index" >
+                                <el-tooltip class="item" effect="light" :content="item" placement="right"  popper-class="atooltip">
+                                    <div class="maptitle">{{item}}</div>
+                                </el-tooltip>
+                                <el-dropdown style="float: right">
+                                    <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; mapIndex = index">重命名</el-dropdown-item>
+                                        <el-dropdown-item style="color:red">删除</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-menu-item>
                         </router-link>
                         <!-- <el-menu-item index="1-2">项目公告</el-menu-item>
                         <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
@@ -77,12 +88,39 @@
                 <router-view/>
             </el-main>
         </div>
+        <el-dialog title="修改地图" :visible.sync="editMapDialogVisible">
+            <el-form>
+                <el-form-item label="地图名称" label-width="120px">
+                <el-input v-model="mapName" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="editMapDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="editMapFunc()">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-container>
 </template>
 
 <script>
 export default {
   name: 'mainview',
+  data () {
+    return {
+      mapNameList: [
+        '地图22222222221',
+        '地图2',
+        '地图3'
+      ],
+      editMapDialogVisible: false,
+      mapIndex: 0
+    }
+  },
+  computed: {
+    mapName: function () {
+      return this.mapNameList[this.mapIndex]
+    }
+  },
   methods: {
     handleOpen (key, keyPath) {
       console.log(key, keyPath)
@@ -204,5 +242,19 @@ margin-top: 60px;
 
 .router{
 text-decoration: none;
+}
+.right {
+    float: right;
+    width: 60px;
+}
+.atooltip{
+    background-color: #F7F7F7 !important;
+}
+.maptitle{
+    max-width: 130px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

@@ -7,6 +7,7 @@ import Login from '@/components/login'
 import MianView from '@/components/mainview'
 import Register from '@/components/register'
 import WeixinArticle from '@/components/xiangmuxinxi/weixinarticle'
+import MapList from '@/components/dingtu/maplist'
 
 Vue.use(Router)
 
@@ -41,7 +42,7 @@ export default new Router({
           redirect: 'quanguotouzi'
         },
         {
-          path: 'dingtu',
+          path: 'dingtu/:id',
           name: 'dingtu',
           component: DingTu
         },
@@ -54,6 +55,11 @@ export default new Router({
           path: 'weixinarticle',
           name: 'weixinarticle',
           component: WeixinArticle
+        },
+        {
+          path: 'maplist',
+          name: 'maplist',
+          component: MapList
         }
       ]
     }
