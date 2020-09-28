@@ -64,7 +64,7 @@
                         <i class="el-icon-menu"></i>
                         <span>钉图标记</span>
                     </template>
-                        <router-link v-for="(item,index) in mapNameList" class="router" :to="'/main/dingtu/' + index" :key="index">
+                        <router-link v-for="(item,index) in mapNameList" class="router" :to="'/main/dingtu/' + index + '?id=5f602c79409e442660edfa27'" :key="index">
                             <el-menu-item :index="'3-' + index" >
                                 <el-tooltip class="item" effect="light" :content="item" placement="right"  popper-class="atooltip">
                                     <div class="maptitle">{{item}}</div>
