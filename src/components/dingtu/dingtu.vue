@@ -946,9 +946,14 @@ export default{
     removeMarker (layerIndex, markerid) {
       this.markerList[layerIndex].markers.find((item, index, arr) => {
         if (item.getExtData().id === markerid) {
-          item.setMap(null)
-          arr.splice(index, 1)
-          this.layerList[layerIndex].markerList.splice(index, 1)
+          var vue = this
+          this.$http.delete('/marker/' + vue.layerList[layerIndex].markerList[index].id).then(Response => {
+            if (Response.status === 200) {
+              item.setMap(null)
+              arr.splice(index, 1)
+              vue.layerList[layerIndex].markerList.splice(index, 1)
+            }
+          })
           return true
         }
         return false
