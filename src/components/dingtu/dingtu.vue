@@ -3,7 +3,7 @@
   <el-dialog title="编辑图层" :visible.sync="editLayerDialogVisible">
       <el-form>
         <el-form-item label="图层名称" label-width="120px">
-          <el-input v-model="layer.label" autocomplete="off"></el-input>
+          <el-input v-model="layer.layerName" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="默认" label-width="120px">
           <el-checkbox v-model="layer.isDefault">默认图层</el-checkbox>
@@ -100,7 +100,7 @@
           <el-dropdown-item >分享图层</el-dropdown-item>
           <el-dropdown-item >数据导入</el-dropdown-item>
           <el-dropdown-item >数据导出</el-dropdown-item>
-          <el-dropdown-item style="color:red">删除图层</el-dropdown-item>
+          <el-dropdown-item style="color:red" @click.native="deleteLayer(index)">删除图层</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
       <i class="el-icon-view layer-setting-icon" style="float: right" @click="visibleLayer(index)"></i>
@@ -215,11 +215,15 @@
     <el-dialog :title="fieldManagerLayer.layerName + '- 字段管理'" :visible.sync="isFieldEdit">
       <div class="fieldedit-content">
       <el-table
-        :data="fieldManagerLayer.valueKeyList">
+        :data="fieldManagerLayer.fieldList">
       <el-table-column
         label="字段名称"
-        prop="key"
         min-width="50%">
+        <template slot-scope="scope">
+          <div>
+            {{scope.row}}
+          </div>
+        </template>
       </el-table-column>
       <el-table-column
         label="操作"
@@ -491,7 +495,7 @@ export default{
       },
       layer: {
         index: 0,
-        label: '',
+        layerName: '',
         isDefault: false
       },
       markerColor: {
@@ -622,6 +626,23 @@ export default{
     }
   },
   methods: {
+    async deleteLayer (index) {
+      var status1 = 0
+      var status2 = 0
+      await this.$http.delete('layer/' + this.layerList[index]._id).then(Response => {
+        status1 = Response.status
+      })
+      await this.$http.delete('marker/multi/' + this.layerList[index]._id).then(Response => {
+        status2 = Response.status
+      })
+      if (status1 === 200 && status2 === 200) {
+        this.markerList[index].markers.forEach(item => {
+          item.setMap(null)
+        })
+        this.markerList.splice(index, 1)
+        this.layerList.splice(index, 1)
+      }
+    },
     async getLayerListByMapid () {
       let vue = this
       console.log(this.mapid)
@@ -691,14 +712,12 @@ export default{
       this.loading = true
       this.isSearchingPoi = true
     },
-    attributeAssign (markerAttribute, layerIndex) {
-      let {id, title, color, fontSize, layerName, location, position} = markerAttribute
-
-      let newMarkerAttribute = {id, title, color, fontSize, layerName, location, position}
-      for (let valueKey of this.layerList[layerIndex].valueKeyList) {
-        newMarkerAttribute[valueKey.key] = markerAttribute[valueKey.key]
+    attributeAssign (fieldList, markerField) {
+      var newmarkerField = {}
+      for (var i = 0; i < fieldList.length; i++) {
+        newmarkerField[fieldList[i]] = markerField[fieldList[i]]
       }
-      return newMarkerAttribute
+      return newmarkerField
     },
     setMarkersStyle () {
       for (var marker of this.$refs.datatable.selection) {
@@ -759,27 +778,68 @@ export default{
       this.removeMarker(this.getLayerIndexByid(row.layer_id), row._id)
       // this.removeMarker(index, row._id)
     },
-    deleteValueKey (index, row) {
-      this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
-        item[this.layerList[this.fieldLayerIndex].valueKeyList[index].key] = undefined
-        delete item[this.layerList[this.fieldLayerIndex].valueKeyList[index].key]
+    async deleteValueKey (index, row) {
+      var data = {
+        'modifyLayerId': this.layerList[this.fieldLayerIndex]._id,
+        'modifyFieldName': 'fieldList',
+        'modifyFieldNameCon': this.layerList[this.fieldLayerIndex].fieldList[index]
+      }
+      var data1 = {
+        'modifyLayerId': this.layerList[this.fieldLayerIndex]._id,
+        'modifyFieldName': 'markerField',
+        'modifyFieldNameCon': this.layerList[this.fieldLayerIndex].fieldList[index]
+      }
+      var status1 = 0
+      var status2 = 0
+      await this.$http.post('layer/deleteLayerField', data).then(Response => {
+        status1 = Response.status
       })
-      this.layerList[this.fieldLayerIndex].valueKeyList.splice(index, 1)
+      await this.$http.post('marker/deleteMarkerField', data1).then(Response => {
+        status2 = Response.status
+      })
+      if (status1 === 201 && status2 === 201) {
+        this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
+          item[this.layerList[this.fieldLayerIndex].fieldList[index]] = undefined
+          delete item[this.layerList[this.fieldLayerIndex].fieldList[index]]
+        })
+        this.layerList[this.fieldLayerIndex].fieldList.splice(index, 1)
+      }
 
       this.isAddValueKey = false
     },
-    addValueKey () {
+    async addValueKey () {
       // var valuelist = deepClone(this.layerList[this.fieldLayerIndex].valueKeyList)
       // valuelist.push({key: this.newValueKey})
       // this.layerList[this.fieldLayerIndex].valueKeyList = valuelist
       // this.$set(this.layerList[this.fieldLayerIndex], 'valueKeyList', valuelist)
       // this.oldValueKeyList = deepClone(this.fieldManagerLayer.valueKeyList)
       // console.log(JSON.stringify(this.oldValueKeyList) === JSON.stringify(this.fieldManagerLayer.valueKeyList))
-      this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
-        item[this.newValueKey] = ''
+      var data = {
+        'modifyLayerId': this.layerList[this.fieldLayerIndex]._id,
+        'modifyFieldName': 'fieldList',
+        'modifyFieldNameCon': this.newValueKey
+      }
+      var data1 = {
+        'modifyLayerId': this.layerList[this.fieldLayerIndex]._id,
+        'modifyFieldName': 'markerField',
+        'modifyFieldNameCon': this.newValueKey
+      }
+      var status1 = 0
+      var status2 = 0
+      await this.$http.post('marker/addMarkerField', data1).then(Response => {
+        status1 = Response.status
       })
-      this.layerList[this.fieldLayerIndex].valueKeyList.push({key: this.newValueKey})
-      console.log(this.layerList[this.fieldLayerIndex])
+      await this.$http.post('layer/addLayerField', data).then(Response => {
+        status2 = Response.status
+      })
+      if (status1 === 201 && status2 === 201) {
+        this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
+          item.markerField[this.newValueKey] = ''
+        })
+        this.layerList[this.fieldLayerIndex].fieldList.push(this.newValueKey)
+      }
+
+      // console.log(this.layerList[this.fieldLayerIndex])
       this.newValueKey = ''
       this.isAddValueKey = false
     },
@@ -812,23 +872,37 @@ export default{
     newmarkerlist (layer) {
       var markerlist = {}
       markerlist.visible = true
-      markerlist.layerName = layer.index
+      markerlist.layer_id = layer._id
       markerlist.markers = []
       return markerlist
     },
-    newLayer (layer) {
-      var newlayer = {}
-      newlayer.label = layer.label
-      newlayer.visible = true
-      newlayer.valueKeyList = [{key: '备注'}]
-      newlayer.markerList = []
-      newlayer.value = layer.index
-      return newlayer
+    async newLayer (layer) {
+      var newlayer = {
+        'layerName': layer.layerName,
+        'map_id': this.mapid,
+        'isVisible': true,
+        'fieldList': [
+          '备注'
+        ]
+      }
+      var res = null
+      await this.$http.post('layer', newlayer).then(Response => {
+        if (Response.status === 201) {
+          res = Response['data']['data']
+        }
+      }
+      )
+      if (res) {
+        // this.layerList.push(res)
+        res.markerList = []
+        this.$set(this.layerList, this.layerList.length, res)
+      }
+      // return res
     },
     addLayerBtn () {
       this.editLayerDialogVisible = true
       this.layer = {
-        label: '',
+        layerName: '',
         isDefault: false,
         index: -1
       }
@@ -841,7 +915,7 @@ export default{
       // console.log(this.markerAttribute)
       // var value = this.markerAttribute.layerName
       // this.markerAttribute.layerName = value
-      // this.initMarkerAttribue(value)
+      this.initMarkerAttribue(value)
       // this.$set(this.markerAttribute, 'layerName', value)
       console.log(value)
       // console.log(this.layerList[value].valueKeyList[0])
@@ -873,7 +947,7 @@ export default{
     editLayerFunc (index) {
       if (index === -1) {
         this.layer.index = this.layerList.length
-        this.layerList.push(this.newLayer(this.layer))
+        this.newLayer(this.layer)
         this.markerList.push(this.newmarkerlist(this.layer))
         console.log(this.markerList)
         if (this.layer.isDefault) {
@@ -883,13 +957,19 @@ export default{
         if (this.layer.isDefault) {
           this.layerIndex = index
         }
-        this.layerList[index].label = this.layer.label
+        this.$http.put('layer/modify?layerId=' + this.layer._id, {'layerName': this.layer.layerName}).then(Response => {
+          if (Response.status === 200) {
+            console.log('修改成功')
+          }
+        })
+        this.layerList[index].layerName = this.layer.layerName
       }
       this.layer = {}
       this.editLayerDialogVisible = false
     },
     editLayerStart (index) {
-      this.layer.label = this.layerList[index].label
+      this.layer.layerName = this.layerList[index].layerName
+      this.layer._id = this.layerList[index]._id
       this.layer.index = index
       this.layer.isDefault = (this.layerIndex === index)
       this.editLayerDialogVisible = true
@@ -897,7 +977,7 @@ export default{
     setLayerDefault (index) {
       console.log('setLayerDefault')
       this.layerIndex = index
-      this.initMarkerAttribue(this.layerIndex)
+      // this.initMarkerAttribue(this.layerIndex)
     },
     showMenuFun () {
       if (this.isMenuShow) {
@@ -963,17 +1043,18 @@ export default{
         return false
       }, this)
       this.popVisible = false
-      this.initMarkerAttribue(this.layerIndex)
+      // this.initMarkerAttribue(this.layerIndex)
+      this.markerAttribute = {}
       this.isEdittingMarker = false
     },
     initMarkerAttribue (index) {
-      this.markerAttribute = { }
+      // this.markerAttribute = { }
       this.$set(this.markerAttribute, 'layer_id', this.layerList[index]._id)
-      var markerField = {}
+      this.markerAttribute.markerField = {}
       for (var i = 0; i < this.layerList[index].fieldList.length; i++) {
-        markerField[this.layerList[index].fieldList[i]] = ''
+        this.markerAttribute.markerField[this.layerList[index].fieldList[i]] = ''
       }
-      this.$set(this.markerAttribute, 'markerField', markerField)
+      // this.$set(this.markerAttribute, 'markerField', markerField)
       this.addMarkerLayerName = index
       // this.markerAttribute.layerName = this.layerIndex
       // this.$set(this.markerAttribute, 'valueList', this.initValueList(this.layerList[index].valueKeyList.length))
@@ -1005,40 +1086,59 @@ export default{
       }
       return undefined
     },
-    editMarker (layerIndex, markerid) {
+    async editMarker (layerIndex, markerid) {
+      var status = 0
       if (this.markerLayerIndex === layerIndex) {
-        var markerIndex = this.markerList[layerIndex].markers.findIndex((item) => {
-          if (item.getExtData().id === markerid) {
-            return true
-          }
-          return false
-        }, this)
-        this.markerList[layerIndex].markers[markerIndex].setMap(null)
         this.markerAttribute.color = this.markerColor.color
         this.markerAttribute.fontSize = this.markerColor.fontSize
-        this.markerList[layerIndex].markers[markerIndex] = this.initMarkByAttribute(this.markerAttribute)
-        // this.layerList[layerIndex].markerList[markerIndex] = this.markerAttribute
-        this.$set(this.layerList[layerIndex].markerList, markerIndex, this.markerAttribute)
-      } else {
-        this.markerList[this.markerLayerIndex].markers.find((item, index, arr) => {
-          if (item.getExtData().id === markerid) {
-            item.setMap(null)
-            arr.splice(index, 1)
-            this.layerList[this.markerLayerIndex].markerList.splice(index, 1)
-            this.markerAttribute.layer_id = this.layerList[layerIndex]._id
-            this.markerAttribute.color = this.markerColor.color
-            this.markerAttribute.fontSize = this.markerColor.fontSize
-            // this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
-            item = this.initMarkByAttribute(this.markerAttribute)
-            this.layerList[layerIndex].markerList.push(this.markerAttribute)
-            this.markerList[layerIndex].markers.push(item)
-            return true
+        this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
+        await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
+          if (Response.status === 200) {
+            status = Response.status
           }
-          return false
-        }, this)
+        })
+        if (status === 200) {
+          var markerIndex = this.markerList[layerIndex].markers.findIndex((item) => {
+            if (item.getExtData().id === markerid) {
+              return true
+            }
+            return false
+          }, this)
+          this.markerList[layerIndex].markers[markerIndex].setMap(null)
+          this.markerList[layerIndex].markers[markerIndex] = this.initMarkByAttribute(this.markerAttribute)
+          // this.layerList[layerIndex].markerList[markerIndex] = this.markerAttribute
+          this.$set(this.layerList[layerIndex].markerList, markerIndex, this.markerAttribute)
+        }
+      } else {
+        this.markerAttribute.color = this.markerColor.color
+        this.markerAttribute.fontSize = this.markerColor.fontSize
+        this.markerAttribute.layer_id = this.layerList[layerIndex]._id
+        this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
+        await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
+          if (Response.status === 200) {
+            status = Response.status
+          }
+        })
+        if (status === 200) {
+          this.markerList[this.markerLayerIndex].markers.find((item, index, arr) => {
+            if (item.getExtData().id === markerid) {
+              item.setMap(null)
+              arr.splice(index, 1)
+              this.layerList[this.markerLayerIndex].markerList.splice(index, 1)
+              // this.markerAttribute.color = this.markerColor.color
+              // this.markerAttribute.fontSize = this.markerColor.fontSize
+              // this.markerAttribute.valueList = this.markerAttribute.valueList.slice(0, this.layerList[this.markerAttribute.layerName].valueKeyList.length)
+              item = this.initMarkByAttribute(this.markerAttribute)
+              this.layerList[layerIndex].markerList.push(this.markerAttribute)
+              this.markerList[layerIndex].markers.push(item)
+              return true
+            }
+            return false
+          }, this)
+        }
       }
 
-      this.initMarkerAttribue(this.layerIndex)
+      this.markerAttribute = {}
       this.isEdittingMarker = false
     },
     drawDOMByStyle (style) {
@@ -1233,7 +1333,6 @@ export default{
       // 保存标记点信息到对应图层标记列表中
       this.marker.setMap(null)
       this.marker = null
-
       var markerAttribute = {
         'latitude': this.markerAttribute.latitude,
         'longitude': this.markerAttribute.longitude,
@@ -1243,7 +1342,7 @@ export default{
         'callout': {},
         'markerName': this.markerAttribute.markerName,
         'layer_id': this.markerAttribute.layer_id,
-        'markerField': this.markerAttribute.markerField
+        'markerField': this.attributeAssign(this.layerList[this.addMarkerLayerName].fieldList, this.markerAttribute.markerField)
       }
       var vue = this
       this.$http.post('marker', markerAttribute).then((Response) => {
@@ -1261,7 +1360,7 @@ export default{
           var top = (vue.markerAttribute.fontSize === '30px') ? '-10px' : (vue.markerAttribute.fontSize === '40px') ? '-20px' : '0px'
           vue.marker.setLabel({
             // offset: new this.AMap.Pixel(-4, -20), // 设置文本标注偏移量
-            content: '<div class="markerlabel ifmarkershow"  style="display:none; transform: translate(-50%); background-color: #40dcff;color: #303133; padding: 0 5px;border-radius: 3px; position: absolute; left: 10px; top:' + top + ';" >' + this.markerAttribute.markerName + '</div>', // 设置文本标注内容
+            content: '<div class="markerlabel ifmarkershow"  style="display:none; transform: translate(-50%); background-color: #40dcff;color: #303133; padding: 0 5px;border-radius: 3px; position: absolute; left: 10px; top:' + top + ';" >' + vue.markerAttribute.markerName + '</div>', // 设置文本标注内容
             direction: 'top' // 设置文本标注方位
           })
           vue.marker.setExtData({id: vue.markerAttribute._id})
@@ -1271,7 +1370,8 @@ export default{
           vue.marker.on('click', vue.markerClickFunc, vue)
           vue.markerList[vue.addMarkerLayerName].markers.push(vue.marker)
         }
-        vue.initMarkerAttribue(vue.layerIndex)
+        // vue.initMarkerAttribue(vue.layerIndex)
+        vue.markerAttribute = {}
         vue.isAddMark = false
         vue.isAddingMarker = false
         vue.removeMarkerEvent()
@@ -1286,8 +1386,8 @@ export default{
     cancelMarker () {
       this.marker.setMap(null)
       this.marker = null
-      this.initMarkerAttribue(this.layerIndex)
-      // this.markerAttribute = { }
+      // this.initMarkerAttribue(this.layerIndex)
+      this.markerAttribute = { }
       // this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
       this.isAddMark = false
