@@ -170,7 +170,7 @@
           width="100">
         </el-table-column>
         <el-table-column
-          prop="title"
+          prop="markerName"
           label="标记名称"
           width="100">
         </el-table-column>
@@ -180,11 +180,13 @@
           width="140">
         </el-table-column>
         <el-table-column
-          v-for="(item,index) in dataManagerLayer.valueKeyList"
+          v-for="(item,index) in dataManagerLayer.fieldList"
           :key="index"
-          :prop="item.key"
-          :label="item.key"
+          :label="item"
           width="140">
+          <template slot-scope="scope">
+            {{scope.row.markerField[item]}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="creator"
@@ -192,7 +194,7 @@
           width="100">
         </el-table-column>
         <el-table-column
-          prop="addtime"
+          prop="updatedAt"
           label="添加时间"
           width="200">
        </el-table-column>
@@ -441,7 +443,7 @@
 </div>
 </template>
 <script>
-// import deepClone from '../../assets/js/deepcopy.js'
+import deepClone from '../../assets/js/deepcopy.js'
 
 export default{
   name: 'DingTu',
@@ -749,11 +751,13 @@ export default{
     },
     dataEdit (index, row) {
       // console.log(index, row)
-      var marker = this.findMarkerByIndexID(row.layerName, row._id)
+      var marker = this.findMarkerByIndexID(this.getLayerIndexByid(row.layer_id), row._id)
+      // var marker = this.findMarkerByIndexID(index, row._id)
       marker.emit('click', {target: marker})
     },
     dataDelete (index, row) {
       this.removeMarker(this.getLayerIndexByid(row.layer_id), row._id)
+      // this.removeMarker(index, row._id)
     },
     deleteValueKey (index, row) {
       this.layerList[this.fieldLayerIndex].markerList.forEach(item => {
@@ -1013,7 +1017,8 @@ export default{
         this.markerAttribute.color = this.markerColor.color
         this.markerAttribute.fontSize = this.markerColor.fontSize
         this.markerList[layerIndex].markers[markerIndex] = this.initMarkByAttribute(this.markerAttribute)
-        this.layerList[layerIndex].markerList[markerIndex] = this.markerAttribute
+        // this.layerList[layerIndex].markerList[markerIndex] = this.markerAttribute
+        this.$set(this.layerList[layerIndex].markerList, markerIndex, this.markerAttribute)
       } else {
         this.markerList[this.markerLayerIndex].markers.find((item, index, arr) => {
           if (item.getExtData().id === markerid) {
@@ -1165,7 +1170,7 @@ export default{
       e.target.C.Ce.labelDom.firstChild.style.display = 'block'
       console.log(e.target.C.Ce.labelDom.firstChild.style.display)
       // e.target.C.Ce.labelDom.style.display = 'block'
-      this.markerAttribute = this.findMarkerById(e.target.getExtData().id)
+      this.markerAttribute = deepClone(this.findMarkerById(e.target.getExtData().id))
       this.Map.setZoomAndCenter(10, [this.markerAttribute.longitude, this.markerAttribute.latitude])
       // // label.offset = new this.AMap.Pixel(-4, -20)
       // label.content = '<div class="markerlabel" style="display:block">' + this.markerAttribute.title + '</div>'
