@@ -57,7 +57,7 @@ export default new Router({
           component: WeixinArticle
         },
         {
-          path: 'maplist',
+          path: 'maplist/:id',
           name: 'maplist',
           component: MapList
         }

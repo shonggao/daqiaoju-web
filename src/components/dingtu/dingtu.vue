@@ -103,7 +103,7 @@
           <el-dropdown-item style="color:red" @click.native="deleteLayer(index)">删除图层</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <i class="el-icon-view layer-setting-icon" style="float: right" @click="visibleLayer(index)"></i>
+      <i class="el-icon-view layer-setting-icon" :style="{float: 'right' , color: layerSettings[getSettingIndexById(layerList[index]._id)].isVisible ? '#35b499' : 'gray' }" @click="visibleLayer(index)"></i>
     </div>
   </div>
   <div id="map" class="map-container">
@@ -453,7 +453,7 @@ export default{
   name: 'DingTu',
   data () {
     return {
-      mapid: this.$route.query.id,
+      mapid: this.$route.params.id,
       markerButtonTitle: '画点',
       isAddMark: false, // 处于添加标记点状态
       isAddingMarker: false, // 正在添加标记点
@@ -519,94 +519,8 @@ export default{
       ],
       markerList: [], // 地图中存储标记点的列表，按照所属图层分类
       layerList: [
-        // {
-        //   value: 0,
-        //   label: '黄金糕',
-        //   visible: true,
-        //   valueKeyList: [
-        //     {
-        //       key: '标记名称'
-        //     },
-        //     {
-        //       key: '标记地址'
-        //     },
-        //     {
-        //       key: '投资金额'
-        //     }
-        //   ],
-        //   markerList: [
-        //     {
-        //       id: '4',
-        //       title: '测试点4',
-        //       color: 'rgb(80, 130, 204)',
-        //       fontSize: '30px',
-        //       layerName: 0,
-        //       '标记名称': '标记名称',
-        //       '标记地址': '标记地址',
-        //       '投资金额': '投资金额',
-        //       valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
-        //       location: '',
-        //       position: [117.397428, 38.90923]
-        //     }
-        //   ]
-        // }, {
-        //   value: 1,
-        //   label: '双皮奶',
-        //   visible: true,
-        //   valueKeyList: [
-        //     {
-        //       key: '标记名称'
-        //     },
-        //     {
-        //       key: '标记地址'
-        //     },
-        //     {
-        //       key: '建设单位'
-        //     }
-        //   ],
-        //   markerList: [
-        //     {
-        //       id: '1',
-        //       title: '测试点1',
-        //       color: 'rgb(80, 130, 204)',
-        //       fontSize: '20px',
-        //       valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
-        //       '标记名称': '标记名称',
-        //       '标记地址': '标记地址',
-        //       '建设单位': '建设单位',
-        //       location: '',
-        //       layerName: 1,
-        //       position: [115.397428, 39.90923]
-        //     },
-        //     {
-        //       id: '2',
-        //       title: '测试点2',
-        //       color: 'rgb(80, 130, 204)',
-        //       fontSize: '30px',
-        //       valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
-        //       location: '',
-        //       '标记名称': '标记名称',
-        //       '标记地址': '标记地址',
-        //       '建设单位': '建设单位',
-        //       layerName: 1,
-        //       position: [116.397428, 38.90923]
-        //     },
-        //     {
-        //       id: '3',
-        //       title: '测试点3',
-        //       color: 'rgb(80, 130, 204)',
-        //       fontSize: '40px',
-        //       valueList: [{value: '123'}, {value: '123'}, {value: '123'}],
-        //       layerName: 1,
-        //       '标记名称': '标记名称',
-        //       '标记地址': '标记地址',
-        //       '建设单位': '建设单位',
-        //       location: '',
-        //       position: [116.397428, 39.90923]
-        //     }
-        //   ]
-        // }
       ],
+      layerSettings: [],
       markerAttribute: {
       }, // 目前操作标记点的属性值
       sizeOptions: [
@@ -635,6 +549,8 @@ export default{
       await this.$http.delete('marker/multi/' + this.layerList[index]._id).then(Response => {
         status2 = Response.status
       })
+      await this.$http.delete('setting/deleteManyByLayerId/' + this.layerList[index]._id)
+      await this.getLayerSettingsByid()
       if (status1 === 200 && status2 === 200) {
         this.markerList[index].markers.forEach(item => {
           item.setMap(null)
@@ -643,17 +559,42 @@ export default{
         this.layerList.splice(index, 1)
       }
     },
+    async init () {
+      await this.getLayerListByMapid()
+      await this.getLayerSettingsByid()
+      const {getMapScript, initMap} = this
+      let AMap = await getMapScript()
+      initMap(AMap)
+    },
     async getLayerListByMapid () {
       let vue = this
-      console.log(this.mapid)
+      // console.log(this.mapid)
       await this.$http.get('marker/testZty/' + this.mapid).then((Response) => {
         if (Response.status === 200) {
           console.log(Response)
           vue.layerList = Response['data']['data']
         }
-
-        // vue.layerList = Response["data"]
       })
+    },
+    async getLayerSettingsByid () {
+      let vue = this
+      await this.$http.get('setting/getMapSettingById?mapId=' + this.mapid + '&userId=5f73f9d5832d312084c6d287').then(Response => {
+        if (Response.status === 200) {
+          console.log(Response)
+          vue.layerSettings = Response['data']['data']
+        }
+      })
+    },
+    getSettingIndexById (id) {
+      let settingindex = 0
+      this.layerSettings.find((item, index) => {
+        if (item.layerId === id) {
+          settingindex = index
+          return true
+        }
+        return false
+      })
+      return settingindex
     },
     getLayerIndexByid (layerid) {
       var layerindex = 0
@@ -892,6 +833,9 @@ export default{
         }
       }
       )
+      await this.$http.put('setting/insertUserSettingOfNewLayer/' + res._id)
+      await this.getLayerSettingsByid()
+      console.log(this.layerSettings)
       if (res) {
         // this.layerList.push(res)
         res.markerList = []
@@ -936,12 +880,13 @@ export default{
       }
     },
     visibleLayer (index) {
-      if (this.layerList[index].visible) {
+      let settingindex = this.getSettingIndexById(this.layerList[index]._id)
+      if (this.layerSettings[settingindex].isVisible) {
         this.hiddenLayer(index)
-        this.layerList[index].visible = false
+        this.layerSettings[settingindex].isVisible = false
       } else {
         this.showLayer(index)
-        this.layerList[index].visible = true
+        this.layerSettings[settingindex].isVisible = true
       }
     },
     editLayerFunc (index) {
@@ -1005,7 +950,7 @@ export default{
         this.layerList.forEach((item, index) => {
           this.markerList[index] = {}
           this.markerList[index].layer_id = item._id
-          this.markerList[index].visible = true
+          this.markerList[index].visible = this.layerSettings[this.getSettingIndexById(item._id)].isVisible
           this.markerList[index].markers = []
           for (let markerAttrubute of item.markerList) {
             var marker = this.initMarkByAttribute(markerAttrubute, this.markerList[index].visible)
@@ -1495,10 +1440,10 @@ export default{
       return list
     },
     dataManagerLayer: function () {
-      return this.layerList[this.dataLayerIndex]
+      return this.layerList[this.dataLayerIndex] ? this.layerList[this.dataLayerIndex] : {}
     },
     fieldManagerLayer: function () {
-      return this.layerList[this.fieldLayerIndex]
+      return this.layerList[this.fieldLayerIndex] ? this.layerList[this.fieldLayerIndex] : {}
     }
   },
   watch: {
@@ -1521,15 +1466,29 @@ export default{
           this.isSearchingPoi = false
         }
       }
+    },
+    '$route' (to, from) {
+      // 监听路由是否变化
+      /* eslint-disable-next-line */
+      if (to.params.id != from.params.id) {
+        this.mapid = to.params.id
+        this.init()
+
+        // this.getLayerListByMapid()
+        // const {getMapScript, initMap} = this
+        // getMapScript()
+        //   .then(initMap)
+      }
     }
   },
   beforeMount () {
-    this.getLayerListByMapid()
+    // this.getLayerListByMapid()
+    this.init()
   },
   mounted () {
-    const {getMapScript, initMap} = this
-    getMapScript()
-      .then(initMap)
+    // const {getMapScript, initMap} = this
+    // getMapScript()
+    //   .then(initMap)
   }
 }
 </script>

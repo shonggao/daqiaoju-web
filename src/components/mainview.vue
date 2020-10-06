@@ -11,11 +11,11 @@
                 <div class="useravatar">
                 </div>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>黄金糕</el-dropdown-item>
-                    <el-dropdown-item>狮子头</el-dropdown-item>
-                    <el-dropdown-item>螺蛳粉</el-dropdown-item>
-                    <el-dropdown-item disabled>双皮奶</el-dropdown-item>
-                    <el-dropdown-item divided>蚵仔煎</el-dropdown-item>
+                    <!-- <el-dropdown-item>黄金糕</el-dropdown-item>
+                    <el-dropdown-item>狮子头</el-dropdown-item> -->
+                    <el-dropdown-item>退出登录</el-dropdown-item>
+                    <!-- <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+                    <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
                 </el-dropdown-menu>
             </el-dropdown>
             <div class="username">
@@ -64,16 +64,17 @@
                         <i class="el-icon-menu"></i>
                         <span>钉图标记</span>
                     </template>
-                        <router-link v-for="(item,index) in mapNameList" class="router" :to="'/main/dingtu/' + index + '?id=5f602c79409e442660edfa27'" :key="index">
+                        <router-link v-for="(item,index) in teamList" class="router" :to="'/main/maplist/' + item.manageTeamList.teamId" :key="item.manageTeamList.teamId">
                             <el-menu-item :index="'3-' + index" >
-                                <el-tooltip class="item" effect="light" :content="item" placement="right"  popper-class="atooltip">
-                                    <div class="maptitle">{{item}}</div>
+                                <el-tooltip class="item" effect="light" :content="item.manageTeamList.teamInfo[0].teamName" placement="right"  popper-class="atooltip">
+                                    <div class="maptitle">{{item.manageTeamList.teamInfo[0].teamName}}</div>
                                 </el-tooltip>
                                 <el-dropdown style="float: right">
                                     <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
                                     <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; mapIndex = index">重命名</el-dropdown-item>
-                                        <el-dropdown-item style="color:red">删除</el-dropdown-item>
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index">团队成员</el-dropdown-item>
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = teamList[teamIndex].manageTeamList.teamInfo[0].teamName">重命名</el-dropdown-item>
+                                        <el-dropdown-item style="color:red">解散团队</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
                             </el-menu-item>
@@ -88,15 +89,15 @@
                 <router-view/>
             </el-main>
         </div>
-        <el-dialog title="修改地图" :visible.sync="editMapDialogVisible">
+        <el-dialog title="修改团队" :visible.sync="editMapDialogVisible">
             <el-form>
-                <el-form-item label="地图名称" label-width="120px">
-                <el-input v-model="mapName" autocomplete="off"></el-input>
+                <el-form-item label="团队名称" label-width="120px">
+                <el-input v-model="teamName" autocomplete="off"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="editMapDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="editMapFunc()">确 定</el-button>
+                <el-button type="primary" @click="editTeamFunc()">确 定</el-button>
             </div>
         </el-dialog>
     </el-container>
@@ -107,24 +108,35 @@ export default {
   name: 'mainview',
   data () {
     return {
-      mapNameList: [
-        '地图22222222221',
-        '地图2',
-        '地图3'
-      ],
+      userId: '5f73f9d5832d312084c6d287',
       editMapDialogVisible: false,
-      mapIndex: 0
+      teamIndex: 0,
+      teamName: '',
+      teamList: {}
     }
   },
   computed: {
-    mapName: function () {
-      return this.mapNameList[this.mapIndex]
-    }
+    // teamName: function () {
+    //   return this.teamList[this.teamIndex].manageTeamList.teamInfo[0].teamName
+    // }
   },
   methods: {
     handleOpen (key, keyPath) {
       console.log(key, keyPath)
+    },
+    getTeamList (userId) {
+      this.$http.get('teamuser/getManageTeamList/' + userId).then(Response => {
+        this.teamList = Response.data.data
+      })
+    },
+    async editTeamFunc () {
+      await this.$http.put('team/updateTeamName?teamId=' + this.teamList[this.teamIndex].manageTeamList.teamInfo[0]._id, {'teamName': this.teamName})
+      this.getTeamList(this.userId)
+      this.editMapDialogVisible = false
     }
+  },
+  created () {
+    this.getTeamList(this.userId)
   }
 }
 </script>
