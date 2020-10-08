@@ -22,6 +22,13 @@ Vue.use(VueAxios, axios)
 Vue.use(ElementUI)
 Vue.prototype.$echarts = echarts
 
+Vue.filter('undefinedTo', function (dataStr, pattern = '——') {
+  if (dataStr === 'UNDEFINED' || dataStr === 'undefined' || dataStr === '') {
+    return pattern
+  }
+  return dataStr
+})
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

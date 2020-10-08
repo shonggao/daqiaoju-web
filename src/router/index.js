@@ -8,6 +8,8 @@ import MianView from '@/components/mainview'
 import Register from '@/components/register'
 import WeixinArticle from '@/components/xiangmuxinxi/weixinarticle'
 import MapList from '@/components/dingtu/maplist'
+import XiangMuChaXun from '@/components/qiyexinxi/xiangmuchaxun'
+import CompanyInfo from '@/components/qiyexinxi/companyinfo'
 
 Vue.use(Router)
 
@@ -60,6 +62,16 @@ export default new Router({
           path: 'maplist/:id',
           name: 'maplist',
           component: MapList
+        },
+        {
+          path: 'xiangmuchaxun',
+          name: 'xiangmuchaxun',
+          component: XiangMuChaXun
+        },
+        {
+          path: 'companyinfo',
+          name: 'companyinfo',
+          component: CompanyInfo
         }
       ]
     }

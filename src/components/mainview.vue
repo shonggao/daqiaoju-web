@@ -54,15 +54,19 @@
                         <i class="el-icon-menu"></i>
                         <span>项目跟踪</span>
                     </template>
-                        <el-menu-item index="2-1">公司信息</el-menu-item>
-                        <el-menu-item index="2-2">项目查询</el-menu-item>
+                        <router-link class="router" to="/main/companyinfo">
+                          <el-menu-item index="2-1" >公司信息</el-menu-item>
+                        </router-link>
+                        <router-link class="router" to="/main/xiangmuchaxun">
+                          <el-menu-item index="2-2">项目查询</el-menu-item>
+                        </router-link>
                         <!-- <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
                         <!-- <el-menu-item index="1-4-1">选项1</el-menu-item> -->
                     </el-submenu>
                     <el-submenu index="3">
                     <template slot="title">
                         <i class="el-icon-menu"></i>
-                        <span>钉图标记</span>
+                        <span>我的团队</span>
                     </template>
                         <router-link v-for="(item,index) in teamList" class="router" :to="'/main/maplist/' + item.manageTeamList.teamId" :key="item.manageTeamList.teamId">
                             <el-menu-item :index="'3-' + index" >
@@ -73,7 +77,7 @@
                                     <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
                                     <el-dropdown-menu slot="dropdown">
                                         <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index">团队成员</el-dropdown-item>
-                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = teamList[teamIndex].manageTeamList.teamInfo[0].teamName">重命名</el-dropdown-item>
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = teamList[teamIndex].manageTeamList.teamInfo[0].teamName; isJoinTeam = false">重命名</el-dropdown-item>
                                         <el-dropdown-item style="color:red">解散团队</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
@@ -82,6 +86,30 @@
                         <!-- <el-menu-item index="1-2">项目公告</el-menu-item>
                         <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
                         <!-- <el-menu-item index="1-4-1">选项1</el-menu-item> -->
+                    </el-submenu>
+                    <el-submenu index="4">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span>加入的团队</span>
+                        </template>
+                        <router-link v-for="(item,index) in joinTeamList" class="router" :to="'/main/maplist/' + item.joinTeamList.teamId" :key="item.joinTeamList.teamId">
+                            <el-menu-item :index="'4-' + index" >
+                                <el-tooltip class="item" effect="light" :content="item.joinTeamList.teamInfo[0].teamName" placement="right"  popper-class="atooltip">
+                                    <div class="maptitle">{{item.joinTeamList.teamInfo[0].teamName}}</div>
+                                </el-tooltip>
+                                <el-dropdown style="float: right">
+                                    <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index">团队成员</el-dropdown-item>
+                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = joinTeamList[teamIndex].joinTeamList.teamInfo[0].teamName; isJoinTeam = true">重命名</el-dropdown-item>
+                                        <el-dropdown-item style="color:red">解散团队</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-menu-item>
+                        </router-link>
+                            <!-- <el-menu-item index="1-2">项目公告</el-menu-item>
+                            <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
+                            <!-- <el-menu-item index="1-4-1">选项1</el-menu-item> -->
                     </el-submenu>
                 </el-menu>
             </el-col>
@@ -112,7 +140,9 @@ export default {
       editMapDialogVisible: false,
       teamIndex: 0,
       teamName: '',
-      teamList: {}
+      teamList: {},
+      joinTeamList: {},
+      isJoinTeam: false
     }
   },
   computed: {
@@ -129,14 +159,25 @@ export default {
         this.teamList = Response.data.data
       })
     },
+    getJoinTeamList (userId) {
+      this.$http.get('teamuser/getJoinTeamList/' + userId).then(Response => {
+        this.joinTeamList = Response.data.data
+      })
+    },
     async editTeamFunc () {
-      await this.$http.put('team/updateTeamName?teamId=' + this.teamList[this.teamIndex].manageTeamList.teamInfo[0]._id, {'teamName': this.teamName})
-      this.getTeamList(this.userId)
+      if (!this.isJoinTeam) {
+        await this.$http.put('team/updateTeamName?teamId=' + this.teamList[this.teamIndex].manageTeamList.teamInfo[0]._id, {'teamName': this.teamName})
+        this.getTeamList(this.userId)
+      } else {
+        await this.$http.put('team/updateTeamName?teamId=' + this.joinTeamList[this.teamIndex].joinTeamList.teamInfo[0]._id, {'teamName': this.teamName})
+        this.getTeamList(this.userId)
+      }
       this.editMapDialogVisible = false
     }
   },
   created () {
     this.getTeamList(this.userId)
+    this.getJoinTeamList(this.userId)
   }
 }
 </script>
