@@ -76,7 +76,7 @@
                                 <el-dropdown style="float: right">
                                     <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
                                     <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index">团队成员</el-dropdown-item>
+                                        <el-dropdown-item @click.native="manageTeam(index)">团队成员</el-dropdown-item>
                                         <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = teamList[teamIndex].manageTeamList.teamInfo[0].teamName; isJoinTeam = false">重命名</el-dropdown-item>
                                         <el-dropdown-item style="color:red">解散团队</el-dropdown-item>
                                     </el-dropdown-menu>
@@ -100,9 +100,9 @@
                                 <el-dropdown style="float: right">
                                     <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
                                     <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index">团队成员</el-dropdown-item>
+                                        <!-- <el-dropdown-item @click.native="teamIndex = index; isManageTeamDialogVisible = true;  teamName = joinTeamList[teamIndex].joinTeamList.teamInfo[0].teamName; isJoinTeam = true">团队成员</el-dropdown-item> -->
                                         <el-dropdown-item @click.native="editMapDialogVisible = true ; teamIndex = index; teamName = joinTeamList[teamIndex].joinTeamList.teamInfo[0].teamName; isJoinTeam = true">重命名</el-dropdown-item>
-                                        <el-dropdown-item style="color:red">解散团队</el-dropdown-item>
+                                        <el-dropdown-item style="color:red">退出团队</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
                             </el-menu-item>
@@ -128,6 +128,55 @@
                 <el-button type="primary" @click="editTeamFunc()">确 定</el-button>
             </div>
         </el-dialog>
+        <el-dialog :title="teamName + '- 团队管理'" :visible.sync="isManageTeamDialogVisible">
+            <div class="fieldedit-content">
+            <el-table
+              :data="teamMemberList">
+            <el-table-column
+              label="字段名称"
+              min-width="50%"
+              prop="weixinName"
+            >
+              <!-- <template slot-scope="scope">
+                <div>
+                  {{scope.row}}
+                </div>
+              </template> -->
+            </el-table-column>
+            <el-table-column
+              label="操作"
+              min-width="50%">
+              <template slot-scope="scope">
+                <el-button
+                size="mini"
+                @click="editValueKey(scope.$index, scope.row)">管理</el-button>
+                <el-button
+                size="mini"
+                type="danger"
+                @click="deleteValueKey(scope.$index, scope.row)">移除</el-button>
+              </template>
+            </el-table-column>
+            </el-table>
+            </div>
+            <div class="fieldedit-bottom">
+              <el-button style="float: right; margin-right: 10px;" type="success" @click="isAddMember = true">邀请新成员</el-button>
+            </div>
+            <el-dialog
+            width="50%"
+            title="邀请成员"
+            :visible.sync="isAddMember"
+            append-to-body>
+            <el-form>
+              <el-form-item label="用户名称" label-width="120px">
+                <el-input v-model="newMemberName" autocomplete="off"></el-input>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="isAddMember = false">取 消</el-button>
+              <el-button type="primary" @click="addMember">确 定</el-button>
+            </div>
+            </el-dialog>
+        </el-dialog>
     </el-container>
 </template>
 
@@ -142,7 +191,10 @@ export default {
       teamName: '',
       teamList: {},
       joinTeamList: {},
-      isJoinTeam: false
+      isJoinTeam: false,
+      teamMemberList: [],
+      isManageTeamDialogVisible: false,
+      isAddMember: false
     }
   },
   computed: {
@@ -154,9 +206,22 @@ export default {
     handleOpen (key, keyPath) {
       console.log(key, keyPath)
     },
+    manageTeam (index) {
+      this.getTeamMemberList(this.teamList[index].manageTeamList.teamId)
+      this.teamIndex = index
+      this.isManageTeamDialogVisible = true
+      this.teamName = this.teamList[index].manageTeamList.teamInfo[0].teamName
+      this.isJoinTeam = false
+    },
     getTeamList (userId) {
       this.$http.get('teamuser/getManageTeamList/' + userId).then(Response => {
         this.teamList = Response.data.data
+      })
+    },
+    getTeamMemberList (teamId) {
+      this.$http.get('teamuser/getJoinTeamUsersList/' + teamId).then(Response => {
+        this.teamMemberList = Response.data.data
+        // console.log(this.teamMemberList)
       })
     },
     getJoinTeamList (userId) {
@@ -309,5 +374,16 @@ text-decoration: none;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.fieldedit-content{
+  max-height: 500px; /*no*/
+  overflow-y: auto;
+}
+.fieldedit-bottom{
+  overflow: hidden;
+  /* border-bottom: 1px solid #eee; no */
+  margin: 5px 0px;
+  padding: 5px 0px;
 }
 </style>
