@@ -107,7 +107,7 @@
     <div class="container program-container-box">
       <div class="program-table-container">
           <el-table
-          :data="tableData1"
+          :data="weixinArticleList"
           border
           class="program-table">
           <el-table-column
@@ -173,77 +173,78 @@ export default{
       isAddName: false,
       isNameEdit: false,
       newName: '',
-      tableData1: [{
-        date: '2016-05-03',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-02',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-08',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-06',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-06',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-06',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-06',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }, {
-        date: '2016-05-07',
-        name: '王小虎',
-        province: '上海',
-        city: '普陀区',
-        address: '上海市普陀区金沙江路 1518 弄',
-        zip: 200333
-      }],
+      // tableData1: [{
+      //   date: '2016-05-03',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-02',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-04',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-01',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-08',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-06',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-06',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-06',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-06',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }, {
+      //   date: '2016-05-07',
+      //   name: '王小虎',
+      //   province: '上海',
+      //   city: '普陀区',
+      //   address: '上海市普陀区金沙江路 1518 弄',
+      //   zip: 200333
+      // }],
+      weixinArticleList: [],
       value1: '',
       value2: '',
       formLabelWidth: '120px',
@@ -255,7 +256,7 @@ export default{
   methods: {
     editFrom () {
       console.log(this.form)
-      this.tableData1[this.editindex] = this.form
+      this.weixinArticleList[this.editindex] = this.form
       this.form = {}
       this.editindex = ''
       this.dialogFormVisible = false
@@ -263,7 +264,7 @@ export default{
     handleEdit (index, row) {
       this.editindex = index
       console.log(index)
-      this.form = this.tableData1[index]
+      this.form = this.weixinArticleList[index]
       this.dialogFormVisible = true
     }
   }

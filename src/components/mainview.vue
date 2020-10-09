@@ -194,7 +194,8 @@ export default {
       isJoinTeam: false,
       teamMemberList: [],
       isManageTeamDialogVisible: false,
-      isAddMember: false
+      isAddMember: false,
+      newMemberName: ''
     }
   },
   computed: {

@@ -45,29 +45,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <div class="teamList-container">
-            <div class="teamList-container-top">
-                <div class="title">
-                    我加入的团队
-                </div>
-            </div>
-            <div class="maplist-container" v-for="(team,id) in selfTeamList" :key="id">
-                <div class="mapbox" v-for='(item,index) in team["mapList"]' :key="index">
-                    <div class="map" style='background: url("http://api.map.baidu.com/staticimage?width=350&height=260&zoom=5&copyright=1&center=116.317653,40.048826"); margin-top: 0px;'>
-                    </div>
-                    <div class="mapbox-foot">{{item.name}}
-                        <el-dropdown style="float: right; margin: 5px;">
-                            <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
-                            <el-dropdown-menu slot="dropdown">
-                                <el-dropdown-item @click.native="editMapDialogVisible = true">重命名</el-dropdown-item>
-                                <el-dropdown-item style="color:red">删除</el-dropdown-item>
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </div>
-                </div>
-            </div>
-        </div> -->
     </div>
 </template>
 <script>
