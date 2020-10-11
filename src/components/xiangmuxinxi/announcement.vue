@@ -47,7 +47,7 @@
       </div>
       <div class="filter-container-box container main-container">
           <el-input class="input-box" v-model="searchProjectName" placeholder="请输入项目名称"></el-input>
-          <el-button class="button-box" plain>搜索</el-button>
+          <el-button class="button-box" plain @click='getTableData'>搜索</el-button>
           <div class="tooltip-container">
               <p class="tooltip">开始时间：</p>
               <el-date-picker
@@ -80,36 +80,6 @@
                 {{scope.row[item]}}
               </template>
               </el-table-column>
-              <!-- <el-table-column
-                prop="date"
-                label="日期"
-                min-width="24%">
-              </el-table-column>
-              <el-table-column
-                prop="name"
-                label="姓名"
-                min-width="18%">
-              </el-table-column>
-              <el-table-column
-                prop="province"
-                label="省份"
-                min-width="18%">
-              </el-table-column>
-              <el-table-column
-                prop="city"
-                label="市区"
-                min-width="18%">
-              </el-table-column>
-              <el-table-column
-                prop="address"
-                label="地址"
-                min-width="45%">
-              </el-table-column> -->
-              <!-- <el-table-column
-                prop="zip"
-                label="邮编"
-                width="120">
-              </el-table-column> -->
               <el-table-column label="操作" width="150">
                 <template slot-scope="scope">
                   <el-button
@@ -172,6 +142,7 @@ export default{
       let data = {
         'proviceName': this.province === '全部' ? '' : this.province,
         'typeName': this.announcementType,
+        'title': this.searchProjectName,
         'page': this.page,
         'limit': 10
       }
@@ -199,7 +170,7 @@ export default{
     },
     handleEdit (index, row) {
       this.editindex = index
-      console.log(index)
+      // console.log(index)
       this.form = deepClone(this.tableData1.result[index])
       this.dialogFormVisible = true
     },

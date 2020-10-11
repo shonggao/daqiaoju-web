@@ -17,9 +17,6 @@
           <template slot-scope="scope">
             <el-button
             size="mini"
-            @click="editName(scope.$index, scope.row)">编辑</el-button>
-            <el-button
-            size="mini"
             type="danger"
             @click="deleteName(scope.$index, scope.row)">删除</el-button>
           </template>
@@ -47,25 +44,22 @@
       </el-dialog>
     <el-dialog title="修改项目信息" :visible.sync="dialogFormVisible">
       <el-form :model="form">
-          <el-form-item label="姓名" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off"></el-input>
+          <el-form-item label="名称" :label-width="formLabelWidth">
+          <el-input v-model="form.title" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="日期" :label-width="formLabelWidth">
           <el-date-picker
-              v-model="form.date"
+              v-model="form.time"
               type="date"
               value-format="yyyy-MM-dd"
               placeholder="选择日期">
           </el-date-picker>
           </el-form-item>
-          <el-form-item label="省份" :label-width="formLabelWidth">
-          <el-input v-model="form.province" autocomplete="off"></el-input>
+          <el-form-item label="简介" :label-width="formLabelWidth">
+          <el-input v-model="form.digest" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="市区" :label-width="formLabelWidth">
-          <el-input v-model="form.city" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="地址" :label-width="formLabelWidth">
-          <el-input v-model="form.address" autocomplete="off"></el-input>
+          <el-form-item label="链接" :label-width="formLabelWidth">
+          <el-input v-model="form.link" autocomplete="off"></el-input>
           </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -76,7 +70,7 @@
     <div class="filter-container container">
       <div class="announcement-filter">
           <p class="filter-type">公众号名称：</p>
-          <el-radio-group v-model="name">
+          <el-radio-group v-model="name" @change='getTableData'>
               <el-radio-button label="全部"></el-radio-button>
               <el-radio-button v-for="(item,index) in nameList" :label="item" :key="index"></el-radio-button>
           </el-radio-group>
@@ -85,8 +79,8 @@
         <!-- <div class="line"></div> -->
     </div>
     <div class="filter-container-box container main-container">
-      <el-input class="input-box" v-model="programName" placeholder="请输入项目名称"></el-input>
-      <el-button class="button-box" plain>搜索</el-button>
+      <el-input class="input-box" v-model="programName" placeholder="请输入文章名称"></el-input>
+      <el-button class="button-box" plain @click='getTableData'>搜索</el-button>
       <div class="tooltip-container">
           <p class="tooltip">开始时间：</p>
           <el-date-picker
@@ -107,40 +101,40 @@
     <div class="container program-container-box">
       <div class="program-table-container">
           <el-table
-          :data="weixinArticleList"
+          :data="weixinArticleList.result"
           border
           class="program-table">
           <el-table-column
-            prop="date"
-            label="日期"
+            prop="title"
+            label="名称"
             min-width="24%">
           </el-table-column>
           <el-table-column
-            prop="name"
-            label="姓名"
+            prop="link"
+            label="链接"
             min-width="18%">
           </el-table-column>
           <el-table-column
-            prop="province"
-            label="省份"
+            prop="digest"
+            label="简介"
             min-width="18%">
           </el-table-column>
           <el-table-column
-            prop="city"
-            label="市区"
+            prop="type"
+            label="文章来源"
             min-width="18%">
           </el-table-column>
           <el-table-column
-            prop="address"
-            label="地址"
-            min-width="45%">
+            prop="time"
+            label="发表时间"
+            min-width="18%">
           </el-table-column>
           <!-- <el-table-column
             prop="zip"
             label="邮编"
             width="120">
           </el-table-column> -->
-          <el-table-column label="操作" style="min-width: 150px">
+          <el-table-column label="操作" width="150">
             <template slot-scope="scope">
               <el-button
                 size="mini"
@@ -156,13 +150,18 @@
           background
           class="page-container"
           layout="prev, pager, next"
-          :total="100">
+          :total="totalNum"
+          :current-page.sync='page'
+          @current-change='handleCurrentChange'
+        >
         </el-pagination>
       </div>
     </div>
   </div>
 </template>
 <script>
+import deepClone from '../../assets/js/deepcopy.js'
+
 export default{
   name: 'weixinarticle',
   data () {
@@ -173,100 +172,58 @@ export default{
       isAddName: false,
       isNameEdit: false,
       newName: '',
-      // tableData1: [{
-      //   date: '2016-05-03',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-02',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-04',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-01',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-08',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-06',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-06',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-06',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-06',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }, {
-      //   date: '2016-05-07',
-      //   name: '王小虎',
-      //   province: '上海',
-      //   city: '普陀区',
-      //   address: '上海市普陀区金沙江路 1518 弄',
-      //   zip: 200333
-      // }],
       weixinArticleList: [],
       value1: '',
       value2: '',
       formLabelWidth: '120px',
       dialogFormVisible: false,
       editindex: '',
-      form: {}
+      form: {},
+      page: 1,
+      totalNum: 0,
+      totalPageNum: 0
     }
   },
   methods: {
-    editFrom () {
-      console.log(this.form)
-      this.weixinArticleList[this.editindex] = this.form
+    async editFrom () {
+      await this.$http.put('weixinarticle/update/' + this.form._id, this.form)
+      await this.getTableData()
       this.form = {}
       this.editindex = ''
       this.dialogFormVisible = false
     },
     handleEdit (index, row) {
       this.editindex = index
-      console.log(index)
-      this.form = this.weixinArticleList[index]
+      // console.log(index)
+      this.form = deepClone(row)
       this.dialogFormVisible = true
+    },
+    async getTableData () {
+      let data = {
+        'typeName': this.name === '全部' ? '' : this.name,
+        'title': this.programName,
+        'page': this.page,
+        'limit': 10
+      }
+      await this.$http.post('weixinarticle/queryPageInfo', data).then(Response => {
+        if (Response.status === 201) {
+          this.weixinArticleList = Response.data.data
+          this.totalNum = this.weixinArticleList.totalNum
+          this.totalPageNum = this.weixinArticleList.totalPageNum
+          console.log(this.tableData1)
+        }
+      })
+    },
+    async handleDelete (index, row) {
+      // await this.$http.delete('notice/' + row._id)
+      // await this.getTableData()
+    },
+    handleCurrentChange () {
+      this.getTableData()
     }
+  },
+  created () {
+    this.getTableData()
   }
 }
 </script>

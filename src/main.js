@@ -23,7 +23,7 @@ Vue.use(ElementUI)
 Vue.prototype.$echarts = echarts
 
 Vue.filter('undefinedTo', function (dataStr, pattern = '——') {
-  if (dataStr === 'UNDEFINED' || dataStr === 'undefined' || dataStr === '') {
+  if (dataStr === 'UNDEFINED' || dataStr === 'undefined' || dataStr === '' || dataStr === undefined) {
     return pattern
   }
   return dataStr
