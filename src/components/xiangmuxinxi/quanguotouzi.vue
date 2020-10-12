@@ -41,7 +41,7 @@
                 <div class="info-footer"></div>
               </div>
               <div class="container chart-container info-container">
-                <p class="title">投资金额分布情况</p>
+                <p class="title">2020年新基建投资规模</p>
                 <div class="line"></div>
                 <div id="chart2" class="chart"></div>
                 <div class="info-footer"></div>
@@ -70,14 +70,14 @@
                   <div class="info-container" style="display: flex; justify-content: center">
                     <div>
                       <p class="province">{{this.province}}交通厅</p>
-                      <a href="" class="link">https://lbs.amap.com/</a>
+                      <a href="" class="link" target="_blank" >https://lbs.amap.com/</a>
                       <div class="info-footer"></div>
                     </div>
                   </div>
                   <div class="info-container" style="display: flex; justify-content: center">
                     <div>
                       <p class="province">{{this.province}}建设厅</p>
-                      <a href="" class="link">https://lbs.amap.com/</a>
+                      <a href="" class="link" target="_blank" >https://lbs.amap.com/</a>
                       <div class="info-footer"></div>
                     </div>
                   </div>
@@ -98,7 +98,7 @@
                 <div class="info-footer"></div>
               </div>
               <div class="container chart-container info-container">
-                <p class="title">投资金额分布情况</p>
+                <p class="title">基建投资资金来源</p>
                 <div class="line"></div>
                 <div id="chart4" class="chart"></div>
                 <div class="info-footer"></div>
@@ -428,63 +428,113 @@ export default {
       },
       myChart: {},
       options3: {
-        color: ['#2f89cf'],
+        backgroundColor: '#0b1531', // 背景色
+        // title: {
+        //   left: 'left',
+        //   text: '2020年新基建投资规模',
+        //   padding: [10, 20, 15, 30],
+        //   textStyle: {
+        //     // color:'#5E95E9',
+        //     color: 'rgb(255,255,255)',
+        //     fontSize: 18
+        //   }
+        // },
         tooltip: {
-          trigger: 'axis',
-          axisPointer: { // 坐标轴指示器，坐标轴触发有效
-            type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
-          }
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c}亿 ({d}%)'
         },
-        grid: {
-          left: '0%',
-          top: '10px',
-          right: '0%',
-          bottom: '4%',
-          width: '88%',
-          containLabel: true
+        legend: {
+          orient: 'horizontal',
+          textStyle: { // 图例文字的样式
+            color: '#fff'
+          },
+          left: 'center',
+          bottom: 10,
+          data: ['特高压', '人工智能', '大数据中心', '轨道交通', '5G基站']
         },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            axisTick: {
-              alignWithLabel: true
-            },
-            // 修改刻度标签相关样式
-            axisLabel: {
-              color: 'black',
-              fontSize: 4
-            },
-            // x轴样式不显示
-            axisLine: {
-              show: false
-            }
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value',
-            // 修改刻度标签相关样式
-            axisLabel: {
-              color: 'black',
-              fontSize: '12'
-            },
-            // x轴样式不显示
-            axisLine: {
-              color: 'black'
-            }
-          }
-        ],
         series: [
           {
-            name: '直接访问',
-            type: 'bar',
-            barWidth: '35%',
-            itemStyle: {
-              // 修改柱子圆角
-              barBorderRadius: 5
+            name: '基建类型',
+            type: 'pie',
+            radius: ['50%', '70%'],
+            center: ['50%', '40%'],
+            avoidLabelOverlap: false,
+            label: {
+              show: false,
+              position: 'center'
             },
-            data: [10, 52, 200, 334, 390, 330, 220]
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: '30',
+                fontWeight: 'bold'
+              }
+            },
+            labelLine: {
+              show: false
+            },
+            data: [
+              {value: 600, name: '特高压'},
+              {value: 300, name: '人工智能'},
+              {value: 1000, name: '大数据中心'},
+              {value: 5000, name: '轨道交通'},
+              {value: 3000, name: '5G基站'}
+            ]
+          }
+        ]
+      },
+      options4: {
+        backgroundColor: '#0b1531', // 背景色
+        // title: {
+        //   left: 'left',
+        //   text: '基建投资资金来源',
+        //   padding: [10, 20, 15, 30],
+        //   textStyle: {
+        //     // color:'#5E95E9',
+        //     color: 'rgb(255,255,255)',
+        //     fontSize: 18
+        //   }
+        // },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c}%'
+        },
+        legend: {
+          orient: 'horizontal',
+          textStyle: { // 图例文字的样式
+            color: '#fff'
+          },
+          left: 'center',
+          bottom: 10,
+          data: ['利用外资和其他资金来源', '国内贷款', '国家预算内资金', '自筹资金']
+        },
+        series: [
+          {
+            name: '资金来源',
+            type: 'pie',
+            radius: ['50%', '70%'],
+            center: ['50%', '40%'],
+            avoidLabelOverlap: false,
+            label: {
+              show: false,
+              position: 'center'
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: '30',
+                fontWeight: 'bold'
+              }
+            },
+            labelLine: {
+              show: false
+            },
+            data: [
+              {value: 8, name: '利用外资和其他资金来源'},
+              {value: 16, name: '国内贷款'},
+              {value: 16, name: '国家预算内资金'},
+              {value: 60, name: '自筹资金'}
+            ]
           }
         ]
       },
@@ -740,7 +790,7 @@ export default {
 
       self.myChart['chart3'].setOption(self.option)
 
-      window.onresize = this.myChart['chart3'].resize
+      window.onresize = self.myChart['chart3'].resize
     }, 2100)
     setInterval(function () {
       self.count1++
@@ -761,10 +811,10 @@ export default {
 
       self.myChart['chart1'].setOption(self.options1)
 
-      window.onresize = this.myChart['chart1'].resize
+      window.onresize = self.myChart['chart1'].resize
     }, 2100)
 
-    this.initChart('chart4', this.options3)
+    this.initChart('chart4', this.options4)
     this.myChart['map'].on('click', function (params) {
       this.province = params.name
       // console.log(params)

@@ -1430,6 +1430,10 @@ export default{
   beforeCreate () {
 
   },
+  beforeDestroy () {
+    console.log(this.layerSettings)
+    this.$http.put('setting/updateSettingMany', this.layerSettings)
+  },
   computed: {
     layerNameList: function () {
       var list = []

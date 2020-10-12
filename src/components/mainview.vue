@@ -34,7 +34,7 @@
                     active-text-color="#ffd04b">
                     <el-submenu index="1">
                     <template slot="title">
-                        <i class="el-icon-location"></i>
+                        <i class="el-icon-tickets"></i>
                         <span>项目信息</span>
                     </template>
                         <router-link class="router" to="/main/quanguotouzi">
@@ -51,7 +51,7 @@
                     </el-submenu>
                     <el-submenu index="2">
                     <template slot="title">
-                        <i class="el-icon-menu"></i>
+                        <i class="el-icon-office-building"></i>
                         <span>项目跟踪</span>
                     </template>
                         <router-link class="router" to="/main/companyinfo">
@@ -65,7 +65,7 @@
                     </el-submenu>
                     <el-submenu index="3">
                     <template slot="title">
-                        <i class="el-icon-menu"></i>
+                        <i class="el-icon-location"></i>
                         <span>我的团队</span>
                     </template>
                         <router-link v-for="(item,index) in teamList" class="router" :to="'/main/maplist/' + item.manageTeamList.teamId" :key="item.manageTeamList.teamId">
@@ -89,7 +89,7 @@
                     </el-submenu>
                     <el-submenu index="4">
                         <template slot="title">
-                            <i class="el-icon-menu"></i>
+                            <i class="el-icon-location"></i>
                             <span>加入的团队</span>
                         </template>
                         <router-link v-for="(item,index) in joinTeamList" class="router" :to="'/main/maplist/' + item.joinTeamList.teamId" :key="item.joinTeamList.teamId">

@@ -15,13 +15,13 @@
                         <div class="infoValue">{{companyInfo.ContactInfo.PhoneNumber | undefinedTo}}</div>
                         <div class="infoName">官网</div>
                         <div class="infoValue">
-                            <a :href="url" style="color: #409EFF">{{url | undefinedTo}}</a>
+                            <a :href="url" style="color: #409EFF" target="_blank" >{{url | undefinedTo}}</a>
                         </div>
                     </div>
                     <div class="info-container">
                         <div class="infoName">邮箱</div>
                         <div class="infoValue">
-                            <a :href="companyInfo.ContactInfo.Email" style="color: #409EFF">{{companyInfo.ContactInfo.Email | undefinedTo}}</a>
+                            <a :href="companyInfo.ContactInfo.Email" target="_blank" style="color: #409EFF">{{companyInfo.ContactInfo.Email | undefinedTo}}</a>
                         </div>
                         <div class="infoName">地址</div>
                         <div class="infoValue">{{companyInfo.Address | undefinedTo}}</div>
