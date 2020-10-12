@@ -165,10 +165,46 @@ export default{
       await this.$http.get('qichacha/keyword?name=' + this.searchCompanyName).then(Response => {
         console.log(Response)
         if (Response.status === 200) {
-          this.companyInfo = Response.data.data.information
+          /* eslint-disable-next-line */
+          if (Response.data.data.information != '无工商信息') {
+            this.companyInfo = Response.data.data.information
+          } else {
+            this.companyInfo = {
+              Name: '', // 公司名称
+              OperName: '', // 法人代表
+              RegistCapi: '', // 注册资本
+              Address: '', // 公司地址
+              Scope: '', // 营业范围
+              BelongOrg: '', // 注册地址
+              PersonScope: '', // 人员规模
+              RecCap: '', // 实缴资本
+
+              Partners: [], // 股权结构
+              Employees: [], // 人员信息
+              ContactInfo: { // 联系信息
+                WebSite: [{Url: ''}],
+                PhoneNumber: '',
+                Email: ''
+              },
+              Area: { // 地区信息
+                Province: '',
+                City: '',
+                County: ''
+              }
+            }
+          }
           this.companyName = Response.data.data.name
           this.project = Response.data.data.project
-          this.initCharts()
+          if (!this.companyInfo.ContactInfo) {
+            this.companyInfo.ContactInfo = { // 联系信息
+              WebSite: [{Url: ''}],
+              PhoneNumber: '',
+              Email: ''
+            }
+          }
+          if (this.companyInfo.Partners) {
+            this.initCharts()
+          }
         }
       })
     },

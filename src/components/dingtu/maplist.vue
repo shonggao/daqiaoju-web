@@ -86,7 +86,7 @@ export default{
       this.$router.push('/main/dingtu/' + mapId)
     },
     async editMapFunc () {
-      await this.$http.put('map/modify?mapId=' + this.mapList[this.mapIndex]._id)
+      await this.$http.put('map/modify?mapId=' + this.mapList[this.mapIndex]._id, {'mapName': this.mapName})
       this.getMapList(this.teamId)
       this.editMapDialogVisible = false
     },

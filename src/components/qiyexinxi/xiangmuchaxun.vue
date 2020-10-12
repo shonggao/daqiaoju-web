@@ -84,7 +84,10 @@ export default{
         Response => {
           if (Response.status === 200) {
             this.searchRes = Response.data.data.reslist
-            this.totalPage = parseInt(Response.data.data.page) * 10
+            /* eslint-disable-next-line */
+            if(this.pn == 1){
+              this.totalPage = parseInt(Response.data.data.page) * 10
+            }
             console.log(Response.data.data)
           }
         }
