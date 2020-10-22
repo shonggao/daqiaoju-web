@@ -10,6 +10,7 @@ import WeixinArticle from '@/components/xiangmuxinxi/weixinarticle'
 import MapList from '@/components/dingtu/maplist'
 import XiangMuChaXun from '@/components/qiyexinxi/xiangmuchaxun'
 import CompanyInfo from '@/components/qiyexinxi/companyinfo'
+import ManageUser from '@/components/manageuser/manageuser'
 
 Vue.use(Router)
 
@@ -72,6 +73,11 @@ export default new Router({
           path: 'companyinfo',
           name: 'companyinfo',
           component: CompanyInfo
+        },
+        {
+          path: 'manageuser',
+          name: 'manageuser',
+          component: ManageUser
         }
       ]
     }

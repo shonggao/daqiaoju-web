@@ -110,9 +110,11 @@
             min-width="24%">
           </el-table-column>
           <el-table-column
-            prop="link"
             label="链接"
             min-width="18%">
+            <template slot-scope="scope">
+              <a :href="scope.row.link" target="_blank">{{scope.row.link}}</a>
+            </template>
           </el-table-column>
           <el-table-column
             prop="digest"
@@ -125,9 +127,11 @@
             min-width="18%">
           </el-table-column>
           <el-table-column
-            prop="time"
             label="发表时间"
             min-width="18%">
+            <template slot-scope="scope">
+              {{scope.row.time | dateFormat}}
+            </template>
           </el-table-column>
           <!-- <el-table-column
             prop="zip"
@@ -187,6 +191,11 @@ export default{
   methods: {
     async editFrom () {
       await this.$http.put('weixinarticle/update/' + this.form._id, this.form)
+      this.$message({
+        type: 'success',
+        message: '修改成功',
+        duration: 2000
+      })
       await this.getTableData()
       this.form = {}
       this.editindex = ''
@@ -210,7 +219,6 @@ export default{
           this.weixinArticleList = Response.data.data
           this.totalNum = this.weixinArticleList.totalNum
           this.totalPageNum = this.weixinArticleList.totalPageNum
-          console.log(this.tableData1)
         }
       })
     },
@@ -278,5 +286,14 @@ export default{
   /* border-bottom: 1px solid #eee; no */
   margin: 5px 0px;
   padding: 5px 0px;
+}
+a{
+  color: white;
+}
+a:hover{
+  color: white;
+}
+a:visited{
+  color: white;
 }
 </style>

@@ -2,15 +2,15 @@
     <div class="login-container">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px" class="login-form">
             <h2 class="login-title">大桥局大数据平台</h2>
-            <el-form-item label="用户名"  prop="username">
-                <el-input v-model="form.username"></el-input>
+            <el-form-item label="用户名"  prop="weixinName">
+                <el-input v-model="form.weixinName"></el-input>
             </el-form-item>
             <el-form-item label="密码" prop="password" >
                 <el-input v-model="form.password" type="password" show-password></el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="submitForm('form')">登录</el-button>
-                <el-button @click="register()">注册</el-button>
+                <el-button type="primary" @click="submitForm('form')" size="medium">登录</el-button>
+                <!-- <el-button @click="register()">注册</el-button> -->
             </el-form-item>
         </el-form>
     </div>
@@ -21,7 +21,7 @@ export default{
   data () {
     return {
       form: {
-        username: '',
+        weixinName: '',
         password: ''
       },
       rules: {
@@ -38,19 +38,50 @@ export default{
   },
   methods: {
     submitForm (formName) {
-      this.$refs[formName].validate(valid => {
+      this.$refs[formName].validate(async valid => {
         console.log(formName)
         // console.log(valid) 验证通过为true，有一个不通过就是false
         if (valid) {
           // 通过的逻辑
-          if (this.form.username === 'admin' && this.form.password === '123456') {
-            this.$router.push('/main')
-          } else {
-            console.log('用户名密码错误')
-          }
+
+          var vue = this
+          // console.log(this.form)
+
+          this.$http.post('auth/login', this.form)
+            .then(Response => {
+              console.log(Response)
+              /* eslint-disable-next-line */
+            if (Response.status == 201) {
+                console.log(Response)
+                console.log(vue)
+                var storage = window.sessionStorage
+                storage.setItem('isLogin', true)
+                storage.setItem('userId', Response.data.data.userInfo._id)
+                storage.setItem('userRole', Response.data.data.userInfo.role)
+                storage.setItem('weixinName', Response.data.data.userInfo.weixinName)
+                storage.setItem('token', Response.data.data.access_token)
+                // vue.$store.commit('setLogin', true)
+                // vue.$store.commit('setUserInfo', Response.data.data.userInfo)
+                // vue.$store.commit('setToken', Response.data.data.access_token)
+                vue.$router.push('/main')
+              }
+            }).catch(error => {
+              console.log(error)
+              vue.$message({
+                type: 'error',
+                message: '用户名密码错误',
+                duration: 2000
+              })
+              console.log('用户名密码错误')
+            })
+          // console.log(res)
         } else {
-          console.log('验证失败')
-          return false
+          vue.$message({
+            type: 'error',
+            message: '用户名和密码不能为空',
+            duration: 2000
+          })
+          console.log('用户名和密码不能为空')
         }
       }, this)
     },
@@ -83,7 +114,7 @@ export default{
 
 /* 标题 */
 .login-title {
-  color: #303133;
+  color:white;
   text-align: center;
 }
 </style>

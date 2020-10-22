@@ -27,7 +27,7 @@
                 <div class="title">
                     {{teamName}}
                 </div>
-                <el-button class="addbtn" @click="addTeamDialogVisible = true">新建地图</el-button>
+                <el-button class="addbtn" @click="addMapStart">新建地图</el-button>
             </div>
             <div class="maplist-container">
                 <div class="mapbox" v-for='(item,index) in mapList' :key="item._id">
@@ -37,8 +37,8 @@
                         <el-dropdown style="float: right; margin: 5px;">
                             <i class="el-dropdown-link el-icon-setting" style="font-size: 20px"></i>
                             <el-dropdown-menu slot="dropdown">
-                                <el-dropdown-item @click.native="editMapDialogVisible = true, mapName = item.mapName, mapIndex = index">重命名</el-dropdown-item>
-                                <el-dropdown-item style="color:red">删除</el-dropdown-item>
+                                <el-dropdown-item @click.native="editMapStart(item.mapName,index)">重命名</el-dropdown-item>
+                                <el-dropdown-item style="color:red" @click.native='deleteMap(item._id)'>删除</el-dropdown-item>
                             </el-dropdown-menu>
                         </el-dropdown>
                     </div>
@@ -59,7 +59,8 @@ export default{
       mapName: '',
       teamName: '',
       mapIndex: 0,
-      mapList: {}
+      mapList: {},
+      power: 1
     }
   },
   computed: {
@@ -73,6 +74,17 @@ export default{
         this.teamName = Response.data.data.teamName
         console.log(this.teamName)
       })
+      let vue = this
+      this.$http.get('teamuser/getPower?teamId=' + teamId + '&userId=' + window.sessionStorage.getItem('userId'))
+        .then(Response => {
+          console.log(Response)
+          /* eslint-disable-next-line */
+          if (Response.status == 200) {
+            vue.power = Response.data.data.power
+            let storage = window.sessionStorage
+            storage.setItem('power', vue.power)
+          }
+        })
     },
     getMapList (teamId) {
       this.$http.get('map/getMapListByTeamId/' + teamId).then(Response => {
@@ -85,10 +97,41 @@ export default{
     goDingtuPage (mapId) {
       this.$router.push('/main/dingtu/' + mapId)
     },
+    editMapStart (mapName, index) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
+      this.editMapDialogVisible = true
+      this.mapName = mapName
+      this.mapIndex = index
+    },
     async editMapFunc () {
       await this.$http.put('map/modify?mapId=' + this.mapList[this.mapIndex]._id, {'mapName': this.mapName})
+      this.$message({
+        type: 'success',
+        message: '修改成功',
+        duration: 2000
+      })
       this.getMapList(this.teamId)
       this.editMapDialogVisible = false
+    },
+    addMapStart () {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
+      this.addTeamDialogVisible = true
     },
     async addTeamFunc () {
       let data = {
@@ -96,8 +139,34 @@ export default{
         'team_Id': this.teamId
       }
       await this.$http.post('map', data)
+      this.$message({
+        type: 'success',
+        message: '添加成功',
+        duration: 2000
+      })
       this.getMapList(this.teamId)
       this.addTeamDialogVisible = false
+    },
+    async deleteMap (mapId) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
+      let res = await this.$confirm(`确定移除 该地图？`).catch(err => console.log(err))
+      if (res) {
+        await this.$http.delete('map/deleteMap/' + mapId)
+        this.$message({
+          type: 'success',
+          message: '删除成功',
+          duration: 2000
+        })
+        await this.getMapList(this.teamId)
+      }
     }
   },
   watch: {

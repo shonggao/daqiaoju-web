@@ -14,6 +14,24 @@
         <el-button type="primary" @click="editLayerFunc(layer.index)">确 定</el-button>
       </div>
   </el-dialog>
+  <el-dialog title="导入数据" :visible.sync="importDataVisible" :before-close='importCancel'>
+      <el-upload
+      class="upload-demo"
+      ref="uploadExcel"
+      action=""
+      multiple
+      :http-request='httpRequest2'
+      :on-success='handleSuccess'
+      :auto-upload='false'
+      :limit="1"
+      >
+      <el-button size="small" type="primary">点击上传</el-button>
+    </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="importDataVisible = false">取 消</el-button>
+        <el-button type="primary" @click="importData">确 定</el-button>
+      </div>
+  </el-dialog>
   <el-dialog title="修改图层" :visible.sync="changeMarkersLayerDialogVisible">
     <el-form>
       <el-form-item label="图层名称" label-width="120px">
@@ -97,9 +115,9 @@
           <el-dropdown-item @click.native="setLayerDefault(index)">设为默认</el-dropdown-item>
           <el-dropdown-item @click.native="startFieldEdit(index)">字段管理</el-dropdown-item>
           <el-dropdown-item @click.native="editLayerStart(index)">编辑</el-dropdown-item>
-          <el-dropdown-item >分享图层</el-dropdown-item>
-          <el-dropdown-item >数据导入</el-dropdown-item>
-          <el-dropdown-item >数据导出</el-dropdown-item>
+          <!-- <el-dropdown-item >分享图层</el-dropdown-item> -->
+          <el-dropdown-item @click.native="importDataStart(index)">数据导入</el-dropdown-item>
+          <el-dropdown-item @click.native="exportDataStart(index)">数据导出</el-dropdown-item>
           <el-dropdown-item style="color:red" @click.native="deleteLayer(index)">删除图层</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -153,7 +171,7 @@
         <input type="text" class="dataFilter" placeholder="请输入筛选内容">
         <el-button type="success" @click="setMarkersStyleDialogVisible = true">设置样式</el-button>
         <el-button type="success" @click="changeMarkersLayerDialogVisible = true; newLayerIndex = dataLayerIndex">修改图层</el-button>
-        <el-button type="danger" @click="deleteMarkersDialogVisible = true">批量删除</el-button>
+        <el-button type="danger" @click="deleteMarkersStart()">批量删除</el-button>
         <i class="el-icon-close close-icon" @click="isDataManager = false"></i>
       </div>
       <div class="dataManager-content">
@@ -336,11 +354,23 @@
           <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]">
         </div>
       </div>
-      <div class="marker-content-item margin-top">
-        <label for="">图片</label>
-        <div class="self-input">
-          <input type="text" class="noborder-input" placeholder="上传图片">
-        </div>
+      <div class="marker-pic-container margin-top" style="background: #ffffff; padding: 10px 15px;">
+        <el-upload
+          class="upload-demo"
+          ref="uploadPic"
+          action=""
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
+          :before-remove="beforeRemove"
+          :httpRequest='httpRequest'
+          multiple
+          list-type="picture"
+          :on-exceed="handleExceed"
+          :auto-upload="false"
+          :file-list="fileList">
+          <label for="" style="margin-right: 15px;">图片</label>
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
       </div>
     </div>
     <div class="form-bottom">
@@ -417,11 +447,23 @@
           <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]">
         </div>
       </div>
-      <div class="marker-content-item margin-top">
-        <label for="">图片</label>
-        <div class="self-input">
-          <input type="text" class="noborder-input" placeholder="上传图片">
-        </div>
+      <div class="marker-pic-container margin-top" style="background: #ffffff; padding: 10px 15px;">
+          <el-upload
+          class="upload-demo"
+          ref="uploadPic1"
+          action=""
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
+          :before-remove="beforeRemove1"
+          :httpRequest='httpRequest1'
+          multiple
+          list-type="picture"
+          :on-exceed="handleExceed"
+          :auto-upload="false"
+          :file-list="fileList1">
+          <label for="" style="margin-right: 15px;">图片</label>
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
       </div>
     </div>
     <div class="form-bottom">
@@ -443,6 +485,7 @@
       <el-button plain @click="closeEditForm">取消</el-button>
     </div>
   </div>
+  <!-- <input type='file' name='file' :value='importdata' id="openFile" style="display: none"> -->
     <!-- </baidu-map> -->
 </div>
 </template>
@@ -454,6 +497,10 @@ export default{
   data () {
     return {
       mapid: this.$route.params.id,
+      power: window.sessionStorage.getItem('power'),
+      importdata: null,
+      importLayerIndex: 0,
+      importDataVisible: false,
       markerButtonTitle: '画点',
       isAddMark: false, // 处于添加标记点状态
       isAddingMarker: false, // 正在添加标记点
@@ -521,6 +568,10 @@ export default{
       layerList: [
       ],
       layerSettings: [],
+      fileList: [],
+      fileList1: [],
+      xlsxList1: [],
+      deleteFileList: [],
       markerAttribute: {
       }, // 目前操作标记点的属性值
       sizeOptions: [
@@ -540,7 +591,105 @@ export default{
     }
   },
   methods: {
+    exportDataStart (index) {
+      let vue = this
+      // this.$http.get({url: 'marker/download/' + this.layerList[index]._id, headers: {'responseType': 'blob'}})// .then(response => { console.log('blob1'); return response.blob() }) //* 注意：fetch的response自带blob()功能，需要将返回值先转一道
+      this.axios.get('marker/download/' + this.layerList[index]._id, {headers: {responseType: 'blob'}})
+        .then(Response => {
+          console.log(Response.request)
+          // let blob = new Blob([Response.request.response], {type: 'application/vnd.ms-excel'})
+          // console.log(blob)
+          // let url = window.URL.createObjectURL(blob)
+          let url = 'http://localhost:3000/api/private/v1/marker/download/5f87b47a75ebed05f490d4e6'
+          let a = document.createElement('a')
+          a.href = url
+          a.download = `${vue.layerList[index].layerName}.xlsx`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+        }).catch(error => {
+          console.log(error)
+        })
+    },
+    handleSuccess (Response) {
+      console.log(Response)
+    },
+    importCancel (done) {
+      console.log('importCancel')
+      this.$refs.uploadExcel.clearFiles()
+      this.xlsxList1 = []
+    },
+    async importData () {
+      var upData = new FormData()
+      this.$refs.uploadExcel.submit()
+      // var files = [].push(param.file)
+      this.xlsxList1.forEach(function (file) {
+        upData.append('file', file, file.name)
+      })
+      await this.$http.post('marker/upload/' + this.layerList[this.importLayerIndex]._id, upData)
+      this.$refs.uploadExcel.clearFiles()
+      this.xlsxList1 = []
+      await this.$http.put('setting/updateSettingMany', this.layerSettings)
+      await this.init()
+      this.initLayer()
+      this.importDataVisible = false
+    },
+    importDataStart (index) {
+      // document.getElementById('openFile').click()
+      // console.log(this.importdata)
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
+      this.importLayerIndex = index
+      this.importDataVisible = true
+    },
+    httpRequest (param) {
+      this.fileList.push(param.file)
+    },
+    httpRequest1 (param) {
+      this.fileList1.push(param.file)
+    },
+    httpRequest2 (param) {
+      this.xlsxList1.push(param.file)
+    },
+    handleRemove (file, fileList) {
+      console.log(file, fileList)
+    },
+    handlePreview (file) {
+      console.log(file)
+    },
+    handleExceed (files, fileList) {
+      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
+    },
+    beforeRemove (file, fileList) {
+      return this.$confirm(`确定移除 ${file.name}？`)
+    },
+    async beforeRemove1 (file, fileList) {
+      let res = await this.$confirm(`确定移除 ${file.name}？`)
+      if (res) {
+        if (file.isReturn) {
+          this.deleteFileList.push(file.url)
+        }
+        return true
+      }
+      return false
+    },
     async deleteLayer (index) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       var status1 = 0
       var status2 = 0
       await this.$http.delete('layer/' + this.layerList[index]._id).then(Response => {
@@ -702,6 +851,18 @@ export default{
       this.$refs.datatable.setCurrentRow()
       this.changeMarkersLayerDialogVisible = false
     },
+    deleteMarkersStart () {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
+      this.deleteMarkersDialogVisible = true
+    },
     deleteMarkers () {
       for (var marker of this.$refs.datatable.selection) {
         this.removeMarker(this.getLayerIndexByid(marker.layer_id), marker._id)
@@ -716,6 +877,15 @@ export default{
       marker.emit('click', {target: marker})
     },
     dataDelete (index, row) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       this.removeMarker(this.getLayerIndexByid(row.layer_id), row._id)
       // this.removeMarker(index, row._id)
     },
@@ -785,6 +955,15 @@ export default{
       this.isAddValueKey = false
     },
     startFieldEdit (index) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       this.isFieldEdit = true
       this.fieldLayerIndex = index
     },
@@ -844,6 +1023,15 @@ export default{
       // return res
     },
     addLayerBtn () {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       this.editLayerDialogVisible = true
       this.layer = {
         layerName: '',
@@ -852,6 +1040,8 @@ export default{
       }
     },
     closeEditForm () {
+      this.$refs.uploadPic1.clearFiles()
+      this.fileList1 = []
       this.isEdittingMarker = false
       this.initMarkByAttribute()
     },
@@ -913,6 +1103,15 @@ export default{
       this.editLayerDialogVisible = false
     },
     editLayerStart (index) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       this.layer.layerName = this.layerList[index].layerName
       this.layer._id = this.layerList[index]._id
       this.layer.index = index
@@ -973,6 +1172,15 @@ export default{
       }, this)
     },
     removeMarker (layerIndex, markerid) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       this.markerList[layerIndex].markers.find((item, index, arr) => {
         if (item.getExtData().id === markerid) {
           var vue = this
@@ -1032,6 +1240,15 @@ export default{
       return undefined
     },
     async editMarker (layerIndex, markerid) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       var status = 0
       if (this.markerLayerIndex === layerIndex) {
         this.markerAttribute.color = this.markerColor.color
@@ -1082,7 +1299,24 @@ export default{
           }, this)
         }
       }
-
+      this.deleteFileList.forEach(item => {
+        this.$http.get('marker/deleteImg?imgUrl=' + item + '&markerId=' + this.markerAttribute._id)
+      }, this)
+      var upData = new FormData()
+      this.$refs.uploadPic1.submit()
+      // var files = [].push(param.file)
+      this.fileList1.forEach(function (file) {
+        if (!file.isReturn) {
+          upData.append('file', file, file.name)
+        }
+      })
+      console.log(this.fileList1)
+      // upData.append('body',JSON.stringify())
+      // let vue = this
+      await this.$http.post('marker/testUpload?markerId=' + this.markerAttribute._id, upData)
+      this.$refs.uploadPic1.clearFiles()
+      console.log(this.fileList1)
+      this.fileList1 = []
       this.markerAttribute = {}
       this.isEdittingMarker = false
     },
@@ -1226,15 +1460,32 @@ export default{
       this.markerColor.fontSize = this.markerAttribute.fontSize
       this.markerLayerIndex = this.getLayerIndexByid(this.markerAttribute.layer_id)
       this.editMarkerLayerIndex = this.markerLayerIndex
+      let vue = this
+      this.$http.get('marker/testDownLoad?markerId=' + this.markerAttribute._id).then(Response => {
+        console.log(vue.fileList1)
+        Response.data.data.forEach((item, index) => {
+          vue.fileList1.push({name: '图片' + index, url: item, isReturn: true})
+        })
+      })
       this.isEdittingMarker = true
     },
     addMarkerByPoi (location) {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       if (this.isAddingMarker) {
         this.cancelMarker()
       }
       this.addMarkerFunc(location, true)
     },
     addMarkerFunc  (e, isSearchAdd) {
+      /* eslint-disable-next-line */
       let position
       if (isSearchAdd) {
         position = [e.lng, e.lat]
@@ -1294,6 +1545,21 @@ export default{
         if (Response.status === 201) {
           let image = vue.drawDOMByStyle(vue.markerColor)
           vue.markerAttribute = Response['data']['data']
+
+          vue.$refs.uploadPic.submit()
+          // console.log(vue.markerAttribute._id)
+          var upData = new FormData()
+          // var files = [].push(param.file)
+          vue.fileList.forEach(function (file) {
+            upData.append('file', file, file.name)
+          })
+          console.log(vue.fileList)
+          // upData.append('body',JSON.stringify())
+          vue.$http.post('marker/testUpload?markerId=' + vue.markerAttribute._id, upData).then(Response => {
+            vue.$refs.uploadPic.clearFiles()
+            vue.fieldList = []
+          })
+
           vue.markerAttribute.color = vue.markerColor.color
           vue.markerAttribute.fontSize = vue.markerColor.fontSize
           // this.markerAttribute.id = this.markerAttribute.markerName
@@ -1335,6 +1601,8 @@ export default{
       this.markerAttribute = { }
       // this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
+      this.$refs.uploadPic.clearFiles()
+      this.fieldList = []
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
@@ -1343,6 +1611,15 @@ export default{
       this.Map.setDefaultCursor('url("https://webapi.amap.com/theme/v1.3/openhand.cur"),point')
     },
     addMarkerEvent () {
+      /* eslint-disable-next-line */
+      if(this.power == 1){
+        this.$message({
+          type: 'warning',
+          message: '您没有修改权限',
+          duration: 2000
+        })
+        return
+      }
       let vue = this
       this.Map.on('click', this.addMarkerFunc, vue)
     },
@@ -1949,5 +2226,12 @@ export default{
       font-size: 12px;
     }
   }
+}
+
+/deep/ .el-upload-list__item .el-icon-close{
+  color: black;
+}
+/deep/ .el-upload-list__item-name{
+  color:black;
 }
 </style>

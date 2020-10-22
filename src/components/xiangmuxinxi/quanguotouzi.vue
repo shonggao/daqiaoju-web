@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <el-dialog title="修改项目信息" :visible.sync="dialogFormVisible">
+    <!-- <el-dialog title="修改项目信息" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="姓名" :label-width="formLabelWidth">
           <el-input v-model="form.name" autocomplete="off"></el-input>
@@ -27,7 +27,7 @@
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="editFrom">确 定</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
     <div class="main-container">
       <div class="container map-container">
         <p class="title">全国项目分布图</p>
@@ -70,14 +70,14 @@
                   <div class="info-container" style="display: flex; justify-content: center">
                     <div>
                       <p class="province">{{this.province}}交通厅</p>
-                      <a href="" class="link" target="_blank" >https://lbs.amap.com/</a>
+                      <a :href="jiaotongLink[province]" class="link" target="_blank" >{{jiaotongLink[province]}}</a>
                       <div class="info-footer"></div>
                     </div>
                   </div>
                   <div class="info-container" style="display: flex; justify-content: center">
                     <div>
                       <p class="province">{{this.province}}建设厅</p>
-                      <a href="" class="link" target="_blank" >https://lbs.amap.com/</a>
+                      <a :href="jiansheLink[province]" class="link" target="_blank" >{{jiansheLink[province]}}</a>
                       <div class="info-footer"></div>
                     </div>
                   </div>
@@ -206,9 +206,11 @@
 // import option from '../assets/js/map.js'
 // import deepClone from '../../assets/js/deepcopy.js'
 // import '../assets/js/china.js'
+import loginMin from '../../assets/js/mixin.js'
 
 export default {
   name: 'quanguptouzi',
+  mixins: [loginMin],
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
@@ -222,6 +224,106 @@ export default {
       form: {},
       count: 8,
       count1: 8,
+      jiaotongLink: {
+        '全国': 'http://www.mot.gov.cn/buzhangwangye/',
+        '湖北': 'http://jtt.hubei.gov.cn/zfxxgk/fdzdgknr/jgjj/ldxx_/',
+        '河南': 'http://www.hncd.gov.cn/portal/zfxxgk/zdgk/tld/lwd/A0905042227index_1.htm',
+        '广东': 'http://td.gd.gov.cn/zwgk_n/zzjg/channel1/index.html',
+        '江苏': 'http://jtyst.jiangsu.gov.cn/col/col77121/index.html',
+        '上海': 'http://jtw.sh.gov.cn/jgld/index.html',
+        '浙江': 'http://jtyst.zj.gov.cn/col/col1229232096/index.html',
+        '山东': 'http://jtt.shandong.gov.cn/col/col100458/index.html?number=SD0102',
+        '北京': 'http://jtw.beijing.gov.cn/xxgk/jgzn/ldjs/',
+        '四川': 'http://jtt.sc.gov.cn/jtt/c102470/ldjs.shtml',
+        '河北': 'http://jtt.hebei.gov.cn/jtyst/zwgk/jcxxgk/jggk/ldzc/',
+        '安徽': 'http://jtt.ah.gov.cn/public/column/21701?type=4&catId=28008581&action=list',
+        '福建': 'http://jtyst.fujian.gov.cn/jtgk/ldzc/hxt/',
+        '湖南': 'http://jtt.hunan.gov.cn/jtt/xxgk/jgzn/tld/index.html',
+        '辽宁': 'http://jtt.ln.gov.cn/jg/ldfg/',
+        '江西': 'http://jt.jiangxi.gov.cn/col/col34273/index.html',
+        '天津': 'http://jtys.tj.gov.cn/ZWGK6002/ZFXXGK3412/FDZDGKNR1877/JGXX/LDXX8181/WKC/',
+        '山西': 'http://jtyst.shanxi.gov.cn/ycx/index.jhtml',
+        '陕西': 'http://jtyst.shaanxi.gov.cn/home/index/ldcy.html',
+        '重庆': 'https://jtj.cq.gov.cn/zwgk_240/ldxx/xra/',
+        '云南': 'http://jtyst.yn.gov.cn/Category_128/Index.aspx',
+        '内蒙古': 'http://jtyst.nmg.gov.cn/jtzw/zzjg/ldbz/',
+        '广西': 'http://jtt.gxzf.gov.cn/zwgk/zfxxgk/jggk/ldzc/',
+        '贵州': 'http://jt.guizhou.gov.cn/zfxxgk/fdzdgknr/ldjl/',
+        '新疆': 'http://jtyst.xinjiang.gov.cn/xjjtysj/tjld0/leadlist.shtml',
+        '吉林': 'http://jtyst.jl.gov.cn/jg_133173/ldjs/',
+        '黑龙江': 'http://zizhan.mot.gov.cn/st/heilongjiang/201707/t20170719_3432228.html',
+        '甘肃': 'http://jtys.gansu.gov.cn/dzsjlr/index.html',
+        '海南': 'http://jt.hainan.gov.cn/xxgk/0100/',
+        '宁夏': 'https://jtt.nx.gov.cn/info/iList.jsp?tm_id=146&cat_id=11137',
+        '青海': 'http://zizhan.mot.gov.cn/st/qinghai/201707/t20170718_3432312.html',
+        '西藏': 'http://jtt.xizang.gov.cn/zzjg/ldjs/',
+        '郑州市': 'http://public.zhengzhou.gov.cn/?d=21#leader',
+        '开封市': 'http://jtysj.kaifeng.gov.cn/news_list.aspx?id=305&pid=303',
+        '洛阳市': 'http://jtysj.ly.gov.cn/home-article-fid-28-pid-31.html',
+        '安阳市': 'http://jtj.anyang.gov.cn/Home/Detail?id=2111',
+        '鹤壁市': 'http://jtj.hebi.gov.cn/sjtj/742319/742320/2159086/index.html',
+        '新乡市': 'http://www.xxjtj.cn/ldbz/',
+        '焦作市': 'http://jtysj.jiaozuo.gov.cn/index.aspx',
+        '濮阳市': 'http://pyjt.puyang.gov.cn/Category_93/Index.aspx',
+        '许昌市': 'http://sjtysj.xuchang.gov.cn/zzjg/001002/20200424/2170c486-b8ce-438c-bace-4a147370db2d.html',
+        '漯河市': 'http://jtj.luohe.gov.cn/about/view-1034.html',
+        '三门峡市': 'http://jtysj.smx.gov.cn/pageView/zhengfuxinxi.html?lmid=1589&rlmid=1599',
+        '南阳市': 'http://www.nanyang.gov.cn/gk/lingdaoxinxi/137725.htm',
+        '商丘市': 'http://www.shangqiu.gov.cn/Government/PublicInfoShow.aspx?ID=5994',
+        '信阳市': 'http://jtysj.xinyang.gov.cn/ca/20180409000001.htm',
+        '周口市': 'http://jtysj.zhoukou.gov.cn/Home/News?Id=27616'
+      },
+      jiansheLink: {
+        '全国': 'http://www.mohurd.gov.cn/bld/index.html',
+        '湖北': 'http://zjt.hubei.gov.cn/zfxxgk/fdzdgknr/jgjj/ldxx/#test',
+        '河南': 'http://www.hnjs.gov.cn/xxgk/leaderInfo',
+        '广东': 'http://zfcxjst.gd.gov.cn/xxgk/ldxx/index.html',
+        '江苏': 'http://jscin.jiangsu.gov.cn/col/col47404/index.html',
+        '上海': 'http://zjw.sh.gov.cn/jgld/index.html',
+        '浙江': 'http://jst.zj.gov.cn/col/col1229155583/index.html',
+        '山东': 'http://zjt.shandong.gov.cn/art/2020/4/23/art_102866_9030752.html?xxgkhide=1',
+        '北京': 'http://zjw.beijing.gov.cn/bjjs/xxgk/jgzn27/index.shtml',
+        '四川': 'http://jst.sc.gov.cn/scjst/c101400/lingdaojieshao.shtml',
+        '河北': 'http://zfcxjst.hebei.gov.cn/xxgk/fdzdg/gaikuangxinxi/lingdaofengong/',
+        '安徽': 'http://dohurd.ah.gov.cn/public/column/6991?type=4&catId=6715221&action=list',
+        '福建': 'http://zjt.fujian.gov.cn/stgk/stld/lrl/',
+        '湖南': 'http://zjt.hunan.gov.cn/zjt/xxgk/jgzn/ldjj/index.html',
+        '辽宁': 'http://zjt.ln.gov.cn/zwgk/tldjj/',
+        '江西': 'http://zjt.jiangxi.gov.cn/col/col40701/index.html',
+        '天津': 'http://zfcxjs.tj.gov.cn/xxgk_70/jggk/ldjs/',
+        '山西': 'https://zjt.shanxi.gov.cn/Main/list.action?channelId=50',
+        '陕西': 'http://js.shaanxi.gov.cn/lingdao/tinglingdaojieshao2002.htm',
+        '重庆': 'http://zfcxjw.cq.gov.cn/zwgk_166/fdzdgknr/jgjj/ldxx/',
+        '云南': 'http://zfcxjst.yn.gov.cn/tld.aspx?id=7557',
+        '内蒙古': 'http://www.nmg.gov.cn/col/col1276/index.html',
+        '广西': 'http://zjt.gxzf.gov.cn/ldjs/',
+        '贵州': 'http://zfcxjst.guizhou.gov.cn/zwgk/xxgkml/jcxxgk/ldjs/',
+        '新疆': 'http://zjt.xinjiang.gov.cn/xjjs/ldxx/list_zzjg.shtml',
+        '吉林': 'http://jst.jl.gov.cn/zwgk/ldfg/',
+        '黑龙江': 'http://zfcxjst.hlj.gov.cn/aspx/ldjj_z.aspx?id=96',
+        '甘肃': 'http://zjt.gansu.gov.cn/view//zzjg/leader/parent//lingdaoxingxi',
+        '海南': 'http://zjt.hainan.gov.cn/szjt/0100/lingdao.shtml',
+        '宁夏': 'http://jst.nx.gov.cn/tld/mhw.htm',
+        '青海': 'http://zjt.qinghai.gov.cn/html/11/10928.html',
+        '西藏': 'http://zjt.xizang.gov.cn/jggk/ldzc/201511/t20151105_98303.html',
+        '郑州市': 'http://public.zhengzhou.gov.cn/?d=18#leader',
+        '开封市': 'http://zfhcxjsj.kaifeng.gov.cn/ldxx',
+        '洛阳市': 'http://lyszjj.ly.gov.cn/index.php?c=article&id=8364',
+        '平顶山市': 'http://zjj.pds.gov.cn/channels/11680.html',
+        '安阳市': 'http://ayzjj.anyang.gov.cn/viewCmsCac.do?cacId=ff8080812f8b5f45012f92dffd581d4b',
+        '鹤壁市': 'http://zjj.hebi.gov.cn/szjj/988842/988856/744224/index.html',
+        '新乡市': 'http://www.xxszjj.gov.cn/',
+        '焦作市': 'http://www.jzjsw.gov.cn/Anli.asp?type=116',
+        '濮阳市': 'http://www.pyjs.gov.cn/pc/fwzx.asp?a=newsview&id=21585',
+        '许昌市': 'http://xcszjj.xuchang.gov.cn/govxxgk/00574722-6/openSubPage.html?specialurl=/govxxgk/00574722-6/category/011/011002/govlist.html&righttitle=%E4%BF%A1%E6%81%AF%E5%85%AC%E5%BC%80%E7%9B%AE%E5%BD%95',
+        '漯河市': 'http://www.lhzj.gov.cn/html/lingdaofengong/',
+        '三门峡市': 'http://zjj.smx.gov.cn/pageView/article.html?pageNum=1&lmid=1403&wzid=327680&rlmid=1409',
+        '南阳市': 'http://www.nanyang.gov.cn/gk/lingdaoxinxi/235473.htm',
+        '商丘市': 'http://www.shangqiu.gov.cn/Government/PublicInfoShow.aspx?ID=7516',
+        '信阳市': 'http://zfcxjsj.xinyang.gov.cn/index.php?c=article&id=2491&cateid=A00010001',
+        '周口市': 'http://zfcxjs.zhoukou.gov.cn/Home/NewsList?Id=1296',
+        '驻马店市': 'http://zjj.zhumadian.gov.cn/a/lingdaozhichuang/2018/0526/47.html'
+      },
       invest: {
         '西藏': 222,
         '青海': 282,

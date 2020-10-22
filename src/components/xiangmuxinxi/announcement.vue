@@ -163,6 +163,11 @@ export default{
       console.log(this.form)
       // this.tableData1.result[this.editindex] = this.form
       await this.$http.put('notice/' + this.urlValueList[this.announcementType] + '/' + this.form._id, this.form)
+      this.$message({
+        type: 'success',
+        message: '修改成功',
+        duration: 2000
+      })
       await this.getTableData()
       this.form = {}
       this.editindex = ''
