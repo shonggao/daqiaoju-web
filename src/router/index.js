@@ -11,6 +11,7 @@ import MapList from '@/components/dingtu/maplist'
 import XiangMuChaXun from '@/components/qiyexinxi/xiangmuchaxun'
 import CompanyInfo from '@/components/qiyexinxi/companyinfo'
 import ManageUser from '@/components/manageuser/manageuser'
+import CaiGouWang from '@/components/qiyexinxi/caigouwang'
 
 Vue.use(Router)
 
@@ -78,6 +79,11 @@ export default new Router({
           path: 'manageuser',
           name: 'manageuser',
           component: ManageUser
+        },
+        {
+          path: 'caigouwang',
+          name: 'caigouwang',
+          component: CaiGouWang
         }
       ]
     }

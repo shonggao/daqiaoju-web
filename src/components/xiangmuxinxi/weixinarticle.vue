@@ -74,14 +74,14 @@
               <el-radio-button label="全部"></el-radio-button>
               <el-radio-button v-for="(item,index) in nameList" :label="item" :key="index"></el-radio-button>
           </el-radio-group>
-          <i class="el-icon-edit edit-icon" @click="isNameEdit = true"></i>
+          <!-- <i class="el-icon-edit edit-icon" @click="isNameEdit = true"></i> -->
       </div>
         <!-- <div class="line"></div> -->
     </div>
     <div class="filter-container-box container main-container">
       <el-input class="input-box" v-model="programName" placeholder="请输入文章名称"></el-input>
       <el-button class="button-box" plain @click='getTableData'>搜索</el-button>
-      <div class="tooltip-container">
+      <!-- <div class="tooltip-container">
           <p class="tooltip">开始时间：</p>
           <el-date-picker
           v-model="value1"
@@ -96,7 +96,7 @@
           value-format="yyyy-MM-dd"
           placeholder="选择日期">
           </el-date-picker>
-      </div>
+      </div> -->
     </div>
     <div class="container program-container-box">
       <div class="program-table-container">
@@ -138,7 +138,7 @@
             label="邮编"
             width="120">
           </el-table-column> -->
-          <el-table-column label="操作" width="150">
+          <!-- <el-table-column label="操作" width="150">
             <template slot-scope="scope">
               <el-button
                 size="mini"
@@ -148,7 +148,7 @@
                 type="danger"
                 @click="handleDelete(scope.$index, scope.row)">删除</el-button>
             </template>
-          </el-table-column>
+          </el-table-column> -->
         </el-table>
         <el-pagination
           background

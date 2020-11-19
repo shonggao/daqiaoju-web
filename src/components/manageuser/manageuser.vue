@@ -202,7 +202,9 @@ export default {
         'password': this.newPassword,
         'role': this.newUserRole
       }
-      await this.$http.post('teamuser', data)
+      let res = await this.$http.post('teamuser', data)
+      console.log(res)
+      this.$http.post('setting/insertUserSettingOfNewUser/' + res.data.data._id, data)
       this.$message({
         type: 'success',
         message: '添加成功',

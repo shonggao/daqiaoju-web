@@ -3,7 +3,11 @@
         <div class="search-container container">
             <el-input class="input-box" v-model="searchCompanyName" placeholder="输入查询公司全名"></el-input>
             <el-button class="button-box" plain @click='searchCompanyInfo'>搜索</el-button>
-            <!-- <input v-model='searchCompanyName' placeholder="输入查询公司全名"> -->
+            <el-button style="float: right" @click='updateProjectList'>更新历史项目</el-button>
+
+            <el-button style="float: right" @click='downloadProjectList1' v-if="linkList.length == 2">下载详细信息</el-button>
+            <el-button style="float: right" @click='downloadProjectList2' v-if="linkList.length == 2">下载概述信息</el-button>
+           <!-- <input v-model='searchCompanyName' placeholder="输入查询公司全名"> -->
         </div>
         <div class="company-container">
             <div class="text-container">
@@ -66,32 +70,6 @@
                         <div class="infoValue">--</div>
                     </div>
                 </div>
-                <!-- <div class="contactway-container container" style="padding-bottom: 15px;">
-                    <div class="title">联系信息</div>
-                    <div class="line"></div>
-                    <div class="info-container">
-                        <div class="infoName">联系电话</div>
-                        <div class="infoValue">010-86498114,010-88083288</div>
-                        <div class="infoName">区域</div>
-                        <div class="infoValue">北京</div>
-                    </div>
-                    <div class="info-container">
-                        <div class="infoName">企业网址</div>
-                        <div class="infoValue">
-                            <a href="http://www.cscec.com" style="color: #409EFF">http://www.cscec.com</a>
-                        </div>
-                        <div class="infoName">电子邮箱</div>
-                        <div class="infoValue">
-                            <a href="ir@cscec.com" style="color: #409EFF">ir@cscec.com</a>
-                        </div>
-                    </div>
-                    <div class="info-container">
-                        <div class="infoName">办公地址</div>
-                        <div class="infoValue">北京市朝阳区安定路5号院3号楼中建财富国际中心</div>
-                        <div class="infoName">注册地址</div>
-                        <div class="infoValue">北京市海淀区三里河路15号</div>
-                    </div>
-                </div> -->
             </div>
             <div class="stock-chart container">
                 <div class="title">股权穿透图</div>
@@ -109,19 +87,12 @@
                 <div>建设单位</div>
                 <div>项目属地</div>
             </div>
-            <div class="tablecell">
-                <div>新江湾城B2-01地块项目</div>
-                <div>3101101601180102</div>
-                <div>房屋建筑工程</div>
-                <div>上海新江湾城投资发展有限公司</div>
-                <div>上海市-市辖区-杨浦区</div>
-            </div>
-            <div class="tablecell">
-                <div>海康威视成都科技园项目（一标段）</div>
-                <div>5101101903120001</div>
-                <div>房屋建筑工程</div>
-                <div>成都海康威视数字技术有限公司</div>
-                <div>四川省-成都市</div>
+            <div class="tablecell" v-for="item in project" :key="item.No">
+                <div>{{item.ProjectName}}</div>
+                <div>{{item.No}}</div>
+                <div>{{item.Category}}</div>
+                <div>{{item.ConsCoyList[0].Name}}</div>
+                <div>{{item.Region}}</div>
             </div>
         </div>
     </div>
@@ -157,7 +128,9 @@ export default{
       },
       companyName: '',
       project: [],
-      data: {}
+      data: {},
+      linkList: [
+      ]
     }
   },
   methods: {
@@ -168,6 +141,7 @@ export default{
           /* eslint-disable-next-line */
           if (Response.data.data.information != '无工商信息') {
             this.companyInfo = Response.data.data.information
+            console.log(this.companyInfo)
           } else {
             this.companyInfo = {
               Name: '', // 公司名称
@@ -194,7 +168,10 @@ export default{
             }
           }
           this.companyName = Response.data.data.name
-          this.project = Response.data.data.project
+          /* eslint-disable-next-line */
+          if (Response.data.data.project != '无工程项目') {
+            this.project = Response.data.data.project
+          }
           if (!this.companyInfo.ContactInfo) {
             this.companyInfo.ContactInfo = { // 联系信息
               WebSite: [{Url: ''}],
@@ -207,6 +184,67 @@ export default{
           }
         }
       })
+      let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
+      let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
+      if (linkinfo1.data.data === false) {
+        this.linkList = []
+      } else {
+        this.linkList.push(linkinfo1.data.data)
+        this.linkList.push(linkinfo2.data.data)
+      }
+    },
+    updateProjectList () {
+      this.$http.get('teamuser/getGlxyDetails/' + this.searchCompanyName)
+        .then(Response => {
+          if (Response.data.data === true) {
+            this.$http.get('teamuser/getGlxyInfo/' + this.searchCompanyName).then(
+              async Response => {
+                if (Response.data.data === true) {
+                  this.$message({
+                    type: 'success',
+                    message: '信息更新成功',
+                    duration: 2000
+                  })
+                  let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
+                  let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
+                  if (linkinfo1.data.data === false) {
+                    this.linkList = []
+                  } else {
+                    this.linkList = []
+                    this.linkList.push(linkinfo1.data.data)
+                    this.linkList.push(linkinfo2.data.data)
+                  }
+                }
+              }
+            )
+          }
+        })
+
+      // let url = 'http://localhost:3000/api/private/v1/marker/download/'
+      // let a = document.createElement('a')
+      // a.href = url
+      // // a.download = `${vue.layerList[index].layerName}.xlsx`
+      // document.body.appendChild(a)
+      // a.click()
+      // a.remove()
+    },
+    downloadProjectList1 () {
+      let url = this.linkList[0]
+      let a = document.createElement('a')
+      a.href = url
+      a.download = url
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    },
+    downloadProjectList2 () {
+      let url = this.linkList[1]
+      let a = document.createElement('a')
+      a.href = url
+      a.download = url
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
     },
     category (type) {
       /* eslint-disable-next-line */

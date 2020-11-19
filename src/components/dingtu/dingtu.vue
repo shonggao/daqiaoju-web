@@ -133,8 +133,8 @@
       </div>
       <div class="search-res-container" v-if="isSearchingPoi">
         <div class="search-type">
-          <el-button round @click="searchType = 1">地点搜索</el-button>
-          <el-button round @click="searchType = 0">标记点搜索</el-button>
+          <el-button round @click="searchType = 1; searchPoi(0)">地点搜索</el-button>
+          <el-button round @click="searchType = 0; searchPoi(0)">标记点搜索</el-button>
         </div>
         <div v-if="searchType" v-loading="loading">
           <div class="search-res"  v-for="(item,index) in searchPoiRes" :key="index" @click="addMarkerByPoi(item.location)">
@@ -149,11 +149,11 @@
           </div>
         </div>
         <div v-else>
-          <div class="search-res"  v-for="(item,index) in searchPoiRes" :key="index">
+          <div class="search-res"  v-for="(item,index) in searchPoiRes" :key="index" @click="searchItemClick(item)">
             <i class="el-icon-location"></i>
             <div class="address-container">
-              <p>{{item.address}}</p>
-              <span>{{item.city}}</span>
+              <p>{{item.markerName}}</p>
+              <span>{{item.location}}</span>
             </div>
           </div>
         </div>
@@ -168,25 +168,25 @@
       <div class="dataManager-top">
         <p class="layerName">{{dataManagerLayer.layerName}}</p>
         <p class="container-title">数据管理</p>
-        <input type="text" class="dataFilter" placeholder="请输入筛选内容">
-        <el-button type="success" @click="setMarkersStyleDialogVisible = true">设置样式</el-button>
-        <el-button type="success" @click="changeMarkersLayerDialogVisible = true; newLayerIndex = dataLayerIndex">修改图层</el-button>
+        <input type="text" class="dataFilter" placeholder="请输入筛选内容" v-model="filterName" @keyup.enter="dataFilter()">
+        <!-- <el-button type="success" @click="setMarkersStyleDialogVisible = true">设置样式</el-button>
+        <el-button type="success" @click="changeMarkersLayerDialogVisible = true; newLayerIndex = dataLayerIndex">修改图层</el-button> -->
         <el-button type="danger" @click="deleteMarkersStart()">批量删除</el-button>
-        <i class="el-icon-close close-icon" @click="isDataManager = false"></i>
+        <i class="el-icon-close close-icon" @click="isDataManager = false; filterName = ''"></i>
       </div>
       <div class="dataManager-content">
       <el-table
         ref='datatable'
-        :data="dataManagerLayer.markerList">
+        :data="filterMarkerList">
         <el-table-column
           type="selection"
           width="55">
         </el-table-column>
-        <el-table-column
+        <!-- <el-table-column
           prop="color"
           label="样式"
           width="100">
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           prop="markerName"
           label="标记名称"
@@ -206,15 +206,18 @@
             {{scope.row.markerField[item]}}
           </template>
         </el-table-column>
-        <el-table-column
+        <!-- <el-table-column
           prop="creator"
           label="创建人"
           width="100">
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           prop="updatedAt"
           label="添加时间"
           width="200">
+          <template slot-scope="scope">
+            {{scope.row.updatedAt | updateTimeFilter}}
+          </template>
        </el-table-column>
         <el-table-column label="操作" width="150">
           <template slot-scope="scope">
@@ -230,7 +233,7 @@
       </el-table>
       </div>
     </div>
-    <el-dialog :title="fieldManagerLayer.layerName + '- 字段管理'" :visible.sync="isFieldEdit">
+    <el-dialog :title="fieldManagerLayer.layerName + '- 字段管理'" :visible.sync="isFieldEdit" :before-close='freshPage'>
       <div class="fieldedit-content">
       <el-table
         :data="fieldManagerLayer.fieldList">
@@ -249,7 +252,7 @@
         <template slot-scope="scope">
           <el-button
           size="mini"
-          @click="editValueKey(scope.$index, scope.row)">编辑</el-button>
+          @click="editValueKeyStart(scope.$index, scope.row)">编辑</el-button>
           <el-button
           size="mini"
           type="danger"
@@ -261,6 +264,21 @@
       <div class="fieldedit-bottom">
         <el-button style="float: right; margin-right: 10px;" type="success" @click="isAddValueKey = true">新增</el-button>
       </div>
+      <el-dialog
+      width="50%"
+      title="修改字段"
+      :visible.sync="editValueKeyDialog"
+      append-to-body>
+      <el-form>
+        <el-form-item label="字段名称" label-width="120px">
+          <el-input v-model="newValueField" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editValueKeyDialog = false">取 消</el-button>
+        <el-button type="primary" @click="editValueKey">确 定</el-button>
+      </div>
+      </el-dialog>
       <el-dialog
       width="50%"
       title="新增字段"
@@ -520,6 +538,8 @@ export default{
       layerIndex: 0, // 默认图层index值
       dataLayerIndex: 0, // 显示数据管理的图层index
       isDataManager: false, // 数据管理窗体是否显示
+      filterName: '',
+      filterMarkerList: [],
       isFieldEdit: false,
       loading: false,
       fieldLayerIndex: 0,
@@ -528,6 +548,9 @@ export default{
       isClearAble: false,
       newValueKey: '',
       isAddValueKey: false,
+      editValueKeyDialog: false,
+      newValueField: '',
+      editValueKeyIndex: 0,
       addMarkerLayerName: 0, // 添加标记点所属图层index
       markerLayerIndex: 0, // 开始标记点图层Index
       editMarkerLayerIndex: 0, // 修改后标记点Index
@@ -587,10 +610,32 @@ export default{
           label: '小',
           value: '20px'
         }
-      ]
+      ],
+      iconPathList: {
+        'rgb(80, 130, 204)': '../../icons/蓝色.png',
+        'rgb(101, 179, 68)': '../../icons/绿色.png',
+        'rgb(255, 0, 0)': '../../icons/红色.png',
+        'rgb(174, 106, 177)': '../../icons/紫色.png',
+        'rgb(255, 109, 52)': '../../icons/橙色.png',
+        'rgb(255, 192, 67)': '../../icons/黄色.png',
+        'rgb(0, 0, 0)': '../../icons/黑色.png'
+      }
     }
   },
+  inject: ['reload'],
   methods: {
+    dataFilter () {
+      this.filterMarkerList = []
+      let length = this.dataManagerLayer.markerList.length
+      for (var i = 0; i < length; i++) {
+        let res = this.dataManagerLayer.markerList[i].markerName.search(this.filterName)
+        // console.log(res)
+        /* eslint-disable-next-line */
+        if (res != -1) {
+          this.filterMarkerList.push(this.dataManagerLayer.markerList[i])
+        }
+      }
+    },
     exportDataStart (index) {
       let vue = this
       // this.$http.get({url: 'marker/download/' + this.layerList[index]._id, headers: {'responseType': 'blob'}})// .then(response => { console.log('blob1'); return response.blob() }) //* 注意：fetch的response自带blob()功能，需要将返回值先转一道
@@ -600,7 +645,7 @@ export default{
           // let blob = new Blob([Response.request.response], {type: 'application/vnd.ms-excel'})
           // console.log(blob)
           // let url = window.URL.createObjectURL(blob)
-          let url = 'http://localhost:3000/api/private/v1/marker/download/5f87b47a75ebed05f490d4e6'
+          let url = 'http://localhost:3000/api/private/v1/marker/download/' + this.layerList[index]._id
           let a = document.createElement('a')
           a.href = url
           a.download = `${vue.layerList[index].layerName}.xlsx`
@@ -631,7 +676,7 @@ export default{
       this.xlsxList1 = []
       await this.$http.put('setting/updateSettingMany', this.layerSettings)
       await this.init()
-      this.initLayer()
+      // this.initLayer()
       this.importDataVisible = false
     },
     importDataStart (index) {
@@ -761,45 +806,59 @@ export default{
       this.isSearchingPoi = false
     },
     searchPoi (isnext) {
-      if (!isnext) {
-        this.poiResultPage.pageIndex = 1
-        this.placeSearch.setPageIndex(1)
-        this.searchPoiRes = []
-      }
-      console.log(this.searchPoiRes)
-      var vue = this
-      // var searchresult = null
-      this.placeSearch.search(this.searchAddress, function (status, result) {
-        console.log('loading')
-        console.log(vue.loading)
-        if (result.poiList.pois.length > 0) {
-          result.poiList.pois.forEach(function (item) {
-            item.province = item.pname
-            item.city = item.cityname
-            item.district = item.adname
-            item.address = item.pname + item.cityname + item.adname + item.address
-          })
-          // searchresult = result.poiList.pois
+      this.loading = true
+      /* eslint-disable-next-line */
+      if(this.searchType == 1){
+        if (!isnext) {
+          this.poiResultPage.pageIndex = 1
+          this.placeSearch.setPageIndex(1)
+          this.searchPoiRes = []
         }
-        vue.poiResultPage.count = result.poiList.count
-        vue.poiResultPage.pageIndex += 1
-        // vue.placeSearch.setPageIndex(vue.poiResultPage.pageIndex)
-        vue.searchPoiRes.push(...result.poiList.pois)
-        vue.Map.setCenter(result.poiList.pois[0].location)
-        vue.$nextTick(function () {
-          console.log('complete')
-          console.log(this.loading)
-          this.loading = false
-        })// for (var i = 0; i < result.poiList.pois.length; i++) {
+        console.log(this.searchPoiRes)
+        var vue = this
+        // var searchresult = null
+        this.placeSearch.search(this.searchAddress, function (status, result) {
+          console.log('loading')
+          console.log(vue.loading)
+          if (result.poiList.pois.length > 0) {
+            result.poiList.pois.forEach(function (item) {
+              item.province = item.pname
+              item.city = item.cityname
+              item.district = item.adname
+              item.address = item.pname + item.cityname + item.adname + item.address
+            })
+          // searchresult = result.poiList.pois
+          }
+          vue.poiResultPage.count = result.poiList.count
+          vue.poiResultPage.pageIndex += 1
+          // vue.placeSearch.setPageIndex(vue.poiResultPage.pageIndex)
+          vue.searchPoiRes.push(...result.poiList.pois)
+          vue.Map.setCenter(result.poiList.pois[0].location)
+          vue.$nextTick(function () {
+            // console.log('complete')
+            // console.log(this.loading)
+            this.loading = false
+          })// for (var i = 0; i < result.poiList.pois.length; i++) {
         //   vue.$set(vue.searchPoiRes, i, result.poiList.pois[i])
         // }
-      })
-      console.log('complete')
+        })
+        // console.log('complete')
+      } else {
+        this.searchPoiRes = []
+        this.loading = false
+        console.log(this.layerList)
+        for (var i = 0; i < this.layerList.length; i++) {
+          for (var j = 0; j < this.layerList[i].markerList.length; j++) {
+            /* eslint-disable-next-line */
+            if (this.layerList[i].markerList[j].markerName.search(this.searchAddress) != -1) {
+              this.searchPoiRes.push(this.layerList[i].markerList[j])
+            }
+          }
+        }
+      }
       // if (searchresult) {
       //   this.searchPoiRes.push(...searchresult)
       // }
-
-      this.loading = true
       this.isSearchingPoi = true
     },
     attributeAssign (fieldList, markerField) {
@@ -870,6 +929,12 @@ export default{
       this.$refs.datatable.setCurrentRow()
       this.deleteMarkersDialogVisible = false
     },
+    searchItemClick (data) {
+      // console.log(index, row)
+      var marker = this.findMarkerByIndexID(this.getLayerIndexByid(data.layer_id), data._id)
+      // var marker = this.findMarkerByIndexID(index, row._id)
+      marker.emit('click', {target: marker})
+    },
     dataEdit (index, row) {
       // console.log(index, row)
       var marker = this.findMarkerByIndexID(this.getLayerIndexByid(row.layer_id), row._id)
@@ -888,6 +953,23 @@ export default{
       }
       this.removeMarker(this.getLayerIndexByid(row.layer_id), row._id)
       // this.removeMarker(index, row._id)
+    },
+    editValueKeyStart (index, row) {
+      this.editValueKeyIndex = index
+      this.newValueField = row
+      this.editValueKeyDialog = true
+    },
+    async editValueKey () {
+      let res = await this.$http.put('layer/modifyLayerField?newField=' + this.newValueField + '&oldField=' + this.layerList[this.fieldLayerIndex].fieldList[this.editValueKeyIndex] + '&layerId=' + this.layerList[this.fieldLayerIndex]._id)
+      console.log(res)
+      this.$set(this.layerList[this.fieldLayerIndex].fieldList, this.editValueKeyIndex, this.newValueField)
+      this.editValueKeyDialog = false
+      // this.layerList[this.fieldLayerIndex].fieldList[index] = '新字段4'
+    },
+    async freshPage () {
+      this.isFieldEdit = false
+      this.reload()
+      // this.initLayer()
     },
     async deleteValueKey (index, row) {
       var data = {
@@ -968,8 +1050,9 @@ export default{
       this.fieldLayerIndex = index
     },
     startDataManager (index) {
-      this.isDataManager = true
       this.dataLayerIndex = index
+      this.isDataManager = true
+      this.dataFilter()
     },
     showLabel () {
       if (this.isShowLabel) {
@@ -1043,7 +1126,8 @@ export default{
       this.$refs.uploadPic1.clearFiles()
       this.fileList1 = []
       this.isEdittingMarker = false
-      this.initMarkByAttribute()
+      // this.initMarkByAttribute()
+      this.markerAttribute = {}
     },
     layerIndexChanged (value) {
       // console.log(this.markerAttribute)
@@ -1099,7 +1183,11 @@ export default{
         })
         this.layerList[index].layerName = this.layer.layerName
       }
-      this.layer = {}
+      this.layer = {
+        index: 0,
+        layerName: '',
+        isDefault: false
+      }
       this.editLayerDialogVisible = false
     },
     editLayerStart (index) {
@@ -1253,6 +1341,9 @@ export default{
       if (this.markerLayerIndex === layerIndex) {
         this.markerAttribute.color = this.markerColor.color
         this.markerAttribute.fontSize = this.markerColor.fontSize
+        this.markerAttribute.width = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
+        this.markerAttribute.height = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
+        this.markerAttribute.iconPath = this.iconPathList[this.markerColor.color]
         this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
         await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
           if (Response.status === 200) {
@@ -1274,6 +1365,9 @@ export default{
       } else {
         this.markerAttribute.color = this.markerColor.color
         this.markerAttribute.fontSize = this.markerColor.fontSize
+        this.markerAttribute.width = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
+        this.markerAttribute.height = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
+        this.markerAttribute.iconPath = this.iconPathList[this.markerColor.color]
         this.markerAttribute.layer_id = this.layerList[layerIndex]._id
         this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
         await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
@@ -1313,7 +1407,7 @@ export default{
       console.log(this.fileList1)
       // upData.append('body',JSON.stringify())
       // let vue = this
-      await this.$http.post('marker/testUpload?markerId=' + this.markerAttribute._id, upData)
+      await this.$http.post('marker/testUpload?markerId=' + this.markerAttribute.id, upData)
       this.$refs.uploadPic1.clearFiles()
       console.log(this.fileList1)
       this.fileList1 = []
@@ -1348,7 +1442,7 @@ export default{
           console.log('根据经纬度查询地址失败')
         }
       })
-      var top = (markerAttribute.width === '30px') ? '-10px' : (markerAttribute.width === '40px') ? '-20px' : '0px'
+      var top = (markerAttribute.fontSize === '30px') ? '-10px' : (markerAttribute.fontSize === '40px') ? '-20px' : '0px'
       marker.setLabel({
         // offset: new this.AMap.Pixel(-4, -20), // 设置文本标注偏移量
         content: '<div class="markerlabel ifmarkershow"  style="display:none; transform: translate(-50%); background-color: #40dcff;color: #303133; padding: 0 5px;border-radius: 3px; position: absolute; left: 10px; top:' + top + ';" >' + markerAttribute.markerName + '</div>', // 设置文本标注内容
@@ -1461,7 +1555,7 @@ export default{
       this.markerLayerIndex = this.getLayerIndexByid(this.markerAttribute.layer_id)
       this.editMarkerLayerIndex = this.markerLayerIndex
       let vue = this
-      this.$http.get('marker/testDownLoad?markerId=' + this.markerAttribute._id).then(Response => {
+      this.$http.get('marker/testDownLoad?markerId=' + this.markerAttribute.id).then(Response => {
         console.log(vue.fileList1)
         Response.data.data.forEach((item, index) => {
           vue.fileList1.push({name: '图片' + index, url: item, isReturn: true})
@@ -1532,16 +1626,18 @@ export default{
       var markerAttribute = {
         'latitude': this.markerAttribute.latitude,
         'longitude': this.markerAttribute.longitude,
-        'width': 30,
-        'height': 30,
-        'iconPath': 'string',
+        'width': (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20,
+        'height': (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20,
+        'iconPath': this.iconPathList[this.markerColor.color],
+        'color': this.markerColor.color,
+        'fontSize': this.markerColor.fontSize,
         'callout': {},
         'markerName': this.markerAttribute.markerName,
         'layer_id': this.markerAttribute.layer_id,
         'markerField': this.attributeAssign(this.layerList[this.addMarkerLayerName].fieldList, this.markerAttribute.markerField)
       }
       var vue = this
-      this.$http.post('marker', markerAttribute).then((Response) => {
+      this.$http.post('marker', markerAttribute).then(async (Response) => {
         if (Response.status === 201) {
           let image = vue.drawDOMByStyle(vue.markerColor)
           vue.markerAttribute = Response['data']['data']
@@ -1555,11 +1651,9 @@ export default{
           })
           console.log(vue.fileList)
           // upData.append('body',JSON.stringify())
-          vue.$http.post('marker/testUpload?markerId=' + vue.markerAttribute._id, upData).then(Response => {
-            vue.$refs.uploadPic.clearFiles()
-            vue.fieldList = []
-          })
-
+          await vue.$http.post('marker/testUpload?markerId=' + vue.markerAttribute.id, upData)
+          vue.$refs.uploadPic.clearFiles()
+          vue.fileList = []
           vue.markerAttribute.color = vue.markerColor.color
           vue.markerAttribute.fontSize = vue.markerColor.fontSize
           // this.markerAttribute.id = this.markerAttribute.markerName
@@ -1602,7 +1696,7 @@ export default{
       // this.markerAttribute.layerName = this.layerIndex
       // this.markerAttribute.valueList = this.initValueList(this.layerList[this.layerIndex].valueKeyList.length)
       this.$refs.uploadPic.clearFiles()
-      this.fieldList = []
+      this.fileList = []
       this.isAddMark = false
       this.isAddingMarker = false
       this.removeMarkerEvent()
@@ -1726,6 +1820,15 @@ export default{
     fieldManagerLayer: function () {
       return this.layerList[this.fieldLayerIndex] ? this.layerList[this.fieldLayerIndex] : {}
     }
+    // filterMarkerList: function () {
+    //   let res = []
+    //   let length = this.dataManagerLayer.markerList.length
+    //   for (var i = 0; i < length; i++) {
+    //     if (this.dataManagerLayer.markerList[i].markerName.search(this.filterName)) {
+    //       res.push(this.dataManagerLayer.markerList[i])
+    //     }
+    //   }
+    // }
   },
   watch: {
     layerList: {

@@ -50,17 +50,17 @@
             <div class="map-container-box container">
                 <div class="info-container-box">
                   <div class="info-container">
-                    <div class="title-container">财政收入</div>
+                    <div class="title-container">{{this.province}}财政收入</div>
                     <div class="info">{{invest[province] | undefinedTo}}亿元</div>
                     <div class="info-footer"></div>
                   </div>
                   <div class="info-container">
-                    <div class="title-container">总投资</div>
+                    <div class="title-container">全国总投资</div>
                     <div class="info">33826亿元</div>
                     <div class="info-footer"></div>
                   </div>
                   <div class="info-container">
-                    <div class="title-container">基建投资额</div>
+                    <div class="title-container">{{this.province}}基建投资额</div>
                     <div class="info">{{revenue[province] | undefinedTo}}元</div>
                     <div class="info-footer"></div>
                   </div>

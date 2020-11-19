@@ -2,7 +2,7 @@
     <div class="main-container">
       <div class="search-container container">
         <el-input class="input-box" v-model="searchProject" placeholder="输入查询项目名称"></el-input>
-        <el-button class="button-box" plain @click='searchPorject'>搜索</el-button>
+        <el-button class="button-box" plain @click='pn = 1;searchPorject()'>搜索</el-button>
         <el-select v-model="site" placeholder="请选择" style="margin-left: 200px; margin-top: 10px">
           <el-option
             v-for="item in options"

@@ -4,26 +4,32 @@
         <div class="websiteicon">
         </div>
         <div class="websitetitle">
-            郑州市大桥局大数据平台
+            中铁大桥局大数据平台
         </div>
         <div class="user-container">
-            <el-dropdown class="usercontainer" trigger="click">
-                <div class="el-icon-message message-container">
-                  <div class="ball" v-if='(newProjectList.length > 0)'></div>
+            <div v-if="isNewsComplete">
+                <el-dropdown class="usercontainer" trigger="click" v-if="(newProjectList.length > 0)">
+                    <div class="el-icon-message message-container">
+                      <div class="ball"></div>
+                    </div>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item v-for='(item,index) in newProjectList' :key="index" class='projectNews-container'>
+                          <span class='projectName' @click=searchProject(item.projectName)>{{item.projectName}}</span>
+                          <span class="newscount">
+                            {{item.newCount}}
+                          </span>
+                        </el-dropdown-item>
+                        <!-- <el-dropdown-item>修改名称</el-dropdown-item>
+                        <el-dropdown-item>退出登录</el-dropdown-item> -->
+                        <!-- <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+                        <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
+                    </el-dropdown-menu>
+                </el-dropdown>
+                <div class="usercontainer" v-else>
+                  <div class="el-icon-message message-container">
+                  </div>
                 </div>
-                <el-dropdown-menu slot="dropdown" v-if='(newProjectList.length > 0)'>
-                    <el-dropdown-item v-for='(item,index) in newProjectList' :key="index" class='projectNews-container'>
-                      <span class='projectName'>{{item.projectName}}</span>
-                      <span class="newscount">
-                        {{item.newsCount}}
-                      </span>
-                    </el-dropdown-item>
-                    <!-- <el-dropdown-item>修改名称</el-dropdown-item>
-                    <el-dropdown-item>退出登录</el-dropdown-item> -->
-                    <!-- <el-dropdown-item disabled>双皮奶</el-dropdown-item>
-                    <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
-                </el-dropdown-menu>
-            </el-dropdown>
+            </div>
             <el-dropdown class="usercontainer" trigger="click">
                 <div class="useravatar">
                 </div>
@@ -31,7 +37,7 @@
                     <el-dropdown-item @click.native="showProjectList">跟踪项目</el-dropdown-item>
                     <el-dropdown-item @click.native="editNameStart">修改名称</el-dropdown-item>
                     <el-dropdown-item @click.native="editPasswordStart">修改密码</el-dropdown-item>
-                    <el-dropdown-item >退出登录</el-dropdown-item>
+                    <el-dropdown-item @click.native="logOut">退出登录</el-dropdown-item>
                     <!-- <el-dropdown-item disabled>双皮奶</el-dropdown-item>
                     <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
                 </el-dropdown-menu>
@@ -42,7 +48,7 @@
         </div>
         </el-header>
         <div style="background-color: #545c64;height: 100%; overflow: auto;">
-            <el-col :span="3">
+            <el-col :span="3" style="min-width: 256px">
                 <el-menu
                     default-active="2"
                     class="el-menu-vertical-demo"
@@ -77,6 +83,9 @@
                         </router-link>
                         <router-link class="router" to="/main/xiangmuchaxun">
                           <el-menu-item index="2-2">项目查询</el-menu-item>
+                        </router-link>
+                        <router-link class="router" to="/main/caigouwang">
+                          <el-menu-item index="2-3">项目跟踪</el-menu-item>
                         </router-link>
                         <!-- <el-menu-item index="1-3">微信公众平台信息</el-menu-item> -->
                         <!-- <el-menu-item index="1-4-1">选项1</el-menu-item> -->
@@ -155,7 +164,7 @@
                 </el-menu>
             </el-col>
             <el-main>
-                <router-view/>
+              <router-view v-if="isRouterAlive"></router-view>
             </el-main>
         </div>
         <el-dialog title="修改用户名" :visible.sync="editWeixinNameVisible">
@@ -360,6 +369,8 @@ export default {
   data () {
     return {
       userId: window.sessionStorage.getItem('userId'),
+      isNewsComplete: false,
+      testflag: false,
       editMapDialogVisible: false,
       teamIndex: 0,
       teamName: '',
@@ -379,26 +390,8 @@ export default {
         weixinName: '',
         canEdit: false
       },
-      newProjectList: [
-        {
-          projectName: '项目名称1sfksdhkghdkg',
-          newsCount: 30
-        },
-        {
-          projectName: '项目名称1',
-          newsCount: 30
-        }
-      ],
-      projectList: [
-        {
-          projectName: '项目名称1dsfsdg',
-          date: '2020-10-20'
-        },
-        {
-          projectName: '项目名称2dsfsdg',
-          date: '2020-10-20'
-        }
-      ],
+      newProjectList: [],
+      projectList: [],
       isProjectListDialogShow: false,
       isAddProject: false,
       newProjectName: '',
@@ -412,7 +405,8 @@ export default {
       /* eslint-disable-next-line */
       isLeader: (window.sessionStorage.getItem('userRole') == '领导'),
       /* eslint-disable-next-line */
-      isManager: (window.sessionStorage.getItem('userRole') == '管理员')
+      isManager: (window.sessionStorage.getItem('userRole') == '管理员'),
+      isRouterAlive: true
     }
   },
   computed: {
@@ -420,7 +414,42 @@ export default {
     //   return this.teamList[this.teamIndex].manageTeamList.teamInfo[0].teamName
     // }
   },
+  provide () {
+    return {
+      reload: this.reload
+    }
+  },
   methods: {
+    reload () {
+      this.isRouterAlive = false
+      console.log('routeralive')
+      this.$nextTick(function () {
+        this.isRouterAlive = true
+      })
+    },
+    logOut () {
+      this.$router.push('/')
+    },
+    async addProject () {
+      await this.$http.get('teamuser/addCareProject?projectName=' + this.newProjectName + '&userId=' + this.userId)
+      await this.$http.post('teamuser/getCareProjectList?userId=' + this.userId).then(Response => {
+        this.projectList = Response.data.data[0].careProjectList
+        console.log(this.projectList)
+      })
+      this.isAddProject = false
+    },
+    async deleteProject (index, row) {
+      await this.$http.get('teamuser/deleteCareProject?projectName=' + row.projectName + '&userId=' + this.userId)
+      await this.$http.post('teamuser/getCareProjectList?userId=' + this.userId).then(Response => {
+        this.projectList = Response.data.data[0].careProjectList
+        console.log(this.projectList)
+      })
+    },
+    searchProject (projectName) {
+      this.$http.get('teamuser/updateLatestDate?projectName=' + projectName + '&userId=' + this.userId)
+      console.log('页面跳转')
+      this.$router.push({path: '/main/caigouwang', query: {keyword: projectName}})
+    },
     editNameStart () {
       this.newWeixinName = this.weixinName
       this.editWeixinNameVisible = true
@@ -435,6 +464,7 @@ export default {
         message: '修改成功',
         duration: 2000
       })
+      window.sessionStorage.setItem('weixinName', this.newWeixinName)
       this.weixinName = this.newWeixinName
       this.editWeixinNameVisible = false
     },
@@ -640,6 +670,11 @@ export default {
       this.editMapDialogVisible = false
     },
     showProjectList () {
+      console.log('showProject')
+      this.$http.post('teamuser/getCareProjectList?userId=' + this.userId).then(Response => {
+        this.projectList = Response.data.data[0].careProjectList
+        console.log(Response.data.data)
+      })
       this.isProjectListDialogShow = true
     }
   },
@@ -656,6 +691,14 @@ export default {
   },
   created () {
     console.log(window.sessionStorage.getItem('userRole'))
+    this.$http.post('teamuser/checkNewInfo?userId=' + this.userId).then(Response => {
+      /* eslint-disable-next-line */
+      if (Response.data.data != '暂无关注项目') {
+        this.newProjectList = Response.data.data
+      }
+      // console.log(Response)
+      this.isNewsComplete = true
+    })
     if (this.isLeader) {
       let vue = this
       this.$http.get('team/getAllTeams').then(Response => {
@@ -826,6 +869,8 @@ text-decoration: none;
 
 .projectNews-container{
   position: relative;
+  padding-right: 35px;
+  line-height: 30px;
 }
 
 .projectName{
@@ -842,7 +887,7 @@ text-decoration: none;
   background-color: red;
   right: 6px;
   line-height: initial;
-  top: 10px;
+  top: 5px;
   color: white;
   font-size: 12px; /*no*/
   text-align: center;

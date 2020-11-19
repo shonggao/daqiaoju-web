@@ -48,7 +48,7 @@
       <div class="filter-container-box container main-container">
           <el-input class="input-box" v-model="searchProjectName" placeholder="请输入项目名称"></el-input>
           <el-button class="button-box" plain @click='getTableData'>搜索</el-button>
-          <div class="tooltip-container">
+          <!-- <div class="tooltip-container">
               <p class="tooltip">开始时间：</p>
               <el-date-picker
               v-model="value1"
@@ -63,7 +63,7 @@
               value-format="yyyy-MM-dd"
               placeholder="选择日期">
               </el-date-picker>
-          </div>
+          </div> -->
       </div>
       <div class="container program-container-box">
           <div class="program-table-container">
