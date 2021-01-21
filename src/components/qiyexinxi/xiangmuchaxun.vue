@@ -69,6 +69,69 @@ export default{
       }, {
         value: 'jsggzy.jszwfw.gov.cn',
         label: '江苏省'
+      }, {
+        value: 'ggzy.hebei.gov.cn',
+        label: '河北省'
+      }, {
+        value: 'ggzyjyzx.shandong.gov.cn',
+        label: '山东省'
+      }, {
+        value: 'ggzy.hunan.gov.cn',
+        label: '湖南省'
+      }, {
+        value: 'gxggzy.gxzf.gov.cn',
+        label: '广西'
+      }, {
+        value: 'bs.gdggzy.org.cn',
+        label: '广东省'
+      }, {
+        value: 'ggzy.guizhou.gov.cn',
+        label: '贵州省'
+      }, {
+        value: 'zw.hainan.gov.cn',
+        label: '海南省'
+      }, {
+        value: 'hljggzyjyw.gov.cn',
+        label: '黑龙江'
+      }, {
+        value: 'jxsggzy.cn',
+        label: '江西省'
+      }, {
+        value: 'ggzyzx.jl.gov.cn',
+        label: '吉林省'
+      }, {
+        value: 'lnggzy.gov.cn',
+        label: '辽宁省'
+      }, {
+        value: 'ggzyjy.nmg.gov.cn',
+        label: '内蒙古'
+      }, {
+        value: 'nxggzyjy.org',
+        label: '宁夏'
+      }, {
+        value: 'qhggzyjy.gov.cn',
+        label: '青海省'
+      }, {
+        value: 'ggzyjy.sc.gov.cn',
+        label: '四川省'
+      }, {
+        value: 'zwfw.xinjiang.gov.cn',
+        label: '新疆'
+      }, {
+        value: 'ggzyjy.gansu.gov.cn',
+        label: '甘肃省'
+      }, {
+        value: 'ggzyfw.fujian.gov.cn',
+        label: '福建省'
+      }, {
+        value: 'xzggzy.gov.cn',
+        label: '西藏'
+      }, {
+        value: 'ynggzy.com',
+        label: '云南省'
+      }, {
+        value: 'new.zmctc.com',
+        label: '浙江省'
       }],
       site: 'bidchance.com',
       pn: 1,

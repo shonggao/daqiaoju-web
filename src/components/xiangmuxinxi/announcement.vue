@@ -42,6 +42,34 @@
                   <el-radio-button label="河北"></el-radio-button>
                   <el-radio-button label="北京"></el-radio-button>
                   <el-radio-button label="上海"></el-radio-button>
+                  <el-radio-button label="天津"></el-radio-button>
+                  <el-radio-button label="重庆"></el-radio-button>
+                  <el-radio-button label="山西"></el-radio-button>
+                  <el-radio-button label="山东"></el-radio-button>
+                  <el-radio-button label="陕西"></el-radio-button>
+                  <el-radio-button label="辽宁"></el-radio-button>
+                  <el-radio-button label="吉林"></el-radio-button>
+                  <el-radio-button label="黑龙江"></el-radio-button>
+                  <el-radio-button label="江苏"></el-radio-button>
+                  <el-radio-button label="浙江"></el-radio-button>
+                  <el-radio-button label="安徽"></el-radio-button>
+                  <el-radio-button label="江西"></el-radio-button>
+                  <el-radio-button label="福建"></el-radio-button>
+                  <el-radio-button label="湖北"></el-radio-button>
+                  <el-radio-button label="湖南"></el-radio-button>
+                  <el-radio-button label="四川"></el-radio-button>
+                  <el-radio-button label="贵州"></el-radio-button>
+                  <el-radio-button label="云南"></el-radio-button>
+                  <el-radio-button label="广东"></el-radio-button>
+                  <el-radio-button label="海南"></el-radio-button>
+                  <el-radio-button label="甘肃"></el-radio-button>
+                  <el-radio-button label="青海"></el-radio-button>
+                  <el-radio-button label="台湾"></el-radio-button>
+                  <el-radio-button label="内蒙古"></el-radio-button>
+                  <el-radio-button label="新疆"></el-radio-button>
+                  <el-radio-button label="西藏"></el-radio-button>
+                  <el-radio-button label="广西"></el-radio-button>
+                  <el-radio-button label="宁夏"></el-radio-button>
               </el-radio-group>
           </div>
       </div>

@@ -220,8 +220,8 @@ export default{
         font-size: 18px;
         padding: 10px 0;
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        /* text-overflow: ellipsis;
+        white-space: nowrap; */
     }
 }
 .map{

@@ -4,7 +4,7 @@
         <div class="websiteicon">
         </div>
         <div class="websitetitle">
-            中铁大桥局大数据平台
+            中铁大桥局集团第一工程有限公司大数据平台
         </div>
         <div class="user-container">
             <div v-if="isNewsComplete">
@@ -689,25 +689,32 @@ export default {
       // return value.charAt(0).toUpperCase() + value.slice(1)
     }
   },
-  created () {
+  async created () {
     console.log(window.sessionStorage.getItem('userRole'))
-    this.$http.post('teamuser/checkNewInfo?userId=' + this.userId).then(Response => {
-      /* eslint-disable-next-line */
-      if (Response.data.data != '暂无关注项目') {
-        this.newProjectList = Response.data.data
-      }
-      // console.log(Response)
-      this.isNewsComplete = true
-    })
     if (this.isLeader) {
       let vue = this
       this.$http.get('team/getAllTeams').then(Response => {
         vue.teamList = Response.data.data
       })
-      return
+      // return
+    } else {
+      this.getTeamList(this.userId)
+      this.getJoinTeamList(this.userId)
     }
-    this.getTeamList(this.userId)
-    this.getJoinTeamList(this.userId)
+
+    let projectList = (await this.$http.post('teamuser/getCareProjectList?userId=' + this.userId)).data.data[0].careProjectList
+    // console.log(projectList)
+    for (var i = 0; i < projectList.length; i++) {
+      await this.$http.post('teamuser/checkNewInfoByItem?userId=' + this.userId + '&projectName=' + projectList[i].projectName).then(Response => {
+        /* eslint-disable-next-line */
+        if (Response.data.data.IsUpdate) {
+          this.newProjectList.push(Response.data.data)
+        }
+        // console.log(Response)
+        // this.isNewsComplete = true
+      })
+    }
+    this.isNewsComplete = true
   }
 }
 </script>

@@ -3,51 +3,51 @@
         <div class="search-container container">
             <el-input class="input-box" v-model="searchCompanyName" placeholder="输入查询公司全名"></el-input>
             <el-button class="button-box" plain @click='searchCompanyInfo'>搜索</el-button>
-            <el-button style="float: right" @click='updateProjectList'>更新历史项目</el-button>
+            <el-button style="float: right" v-if="isManager" @click='updateProjectList'>更新历史项目</el-button>
 
-            <el-button style="float: right" @click='downloadProjectList1' v-if="linkList.length == 2">下载详细信息</el-button>
-            <el-button style="float: right" @click='downloadProjectList2' v-if="linkList.length == 2">下载概述信息</el-button>
+            <el-button style="float: right" @click='downloadProjectList1' v-if="linkGlxyInfoDetail">下载详细信息</el-button>
+            <el-button style="float: right" @click='downloadProjectList2' v-if="linkGlxyInfo">下载概述信息</el-button>
            <!-- <input v-model='searchCompanyName' placeholder="输入查询公司全名"> -->
         </div>
         <div class="company-container">
             <div class="text-container">
-                <div class="companyInfo-container container">
-                    <div class="companyName">{{companyName | undefinedTo}}</div>
-                    <div class="line"></div>
-                    <div class="info-container">
-                        <div class="infoName">电话</div>
-                        <div class="infoValue">{{companyInfo.ContactInfo.PhoneNumber | undefinedTo}}</div>
-                        <div class="infoName">官网</div>
-                        <div class="infoValue">
-                            <a :href="url" style="color: #409EFF" target="_blank" >{{url | undefinedTo}}</a>
-                        </div>
-                    </div>
-                    <div class="info-container">
-                        <div class="infoName">邮箱</div>
-                        <div class="infoValue">
-                            <a :href="companyInfo.ContactInfo.Email" target="_blank" style="color: #409EFF">{{companyInfo.ContactInfo.Email | undefinedTo}}</a>
-                        </div>
-                        <div class="infoName">地址</div>
-                        <div class="infoValue">{{companyInfo.Address | undefinedTo}}</div>
-                    </div>
-                    <div class="info-container">
-                        <div class="infoName">登记机关</div>
-                        <div class="infoValue">{{companyInfo.BelongOrg | undefinedTo}}
-                        </div>
-                        <div class="infoName">注册资本</div>
-                        <div class="infoValue">{{companyInfo.RegistCapi | undefinedTo}}</div>
-                    </div>
-                    <div class="info-container">
-                        <div class="infoName">企业规模</div>
-                        <div class="infoValue">{{companyInfo.PersonScope | undefinedTo}}
-                        </div>
-                        <div class="infoName">实缴资本</div>
-                        <div class="infoValue">{{companyInfo.RecCap | undefinedTo}}</div>
-                    </div>
-                    <div class="info-container">
-                        <div style="font-size: 20px;"><span>简介:</span>{{companyInfo.Scope | undefinedTo}}</div>
-                    </div>
-                </div>
+                  <div class="companyInfo-container container">
+                      <div class="companyName">{{companyName | undefinedTo}}</div>
+                      <div class="line"></div>
+                      <div class="info-container">
+                          <div class="infoName">电话</div>
+                          <div class="infoValue">{{companyInfo.ContactInfo.PhoneNumber | undefinedTo}}</div>
+                          <div class="infoName">官网</div>
+                          <div class="infoValue">
+                              <a :href="url" style="color: #409EFF" target="_blank" >{{url | undefinedTo}}</a>
+                          </div>
+                      </div>
+                      <div class="info-container">
+                          <div class="infoName">邮箱</div>
+                          <div class="infoValue">
+                              <a :href="companyInfo.ContactInfo.Email" target="_blank" style="color: #409EFF">{{companyInfo.ContactInfo.Email | undefinedTo}}</a>
+                          </div>
+                          <div class="infoName">地址</div>
+                          <div class="infoValue">{{companyInfo.Address | undefinedTo}}</div>
+                      </div>
+                      <div class="info-container">
+                          <div class="infoName">登记机关</div>
+                          <div class="infoValue">{{companyInfo.BelongOrg | undefinedTo}}
+                          </div>
+                          <div class="infoName">注册资本</div>
+                          <div class="infoValue">{{companyInfo.RegistCapi | undefinedTo}}</div>
+                      </div>
+                      <div class="info-container">
+                          <div class="infoName">企业规模</div>
+                          <div class="infoValue">{{companyInfo.PersonScope | undefinedTo}}
+                          </div>
+                          <div class="infoName">实缴资本</div>
+                          <div class="infoValue">{{companyInfo.RecCap | undefinedTo}}</div>
+                      </div>
+                      <div class="info-container">
+                          <div style="font-size: 20px;"><span>简介:</span>{{companyInfo.Scope | undefinedTo}}</div>
+                      </div>
+                  </div>
                 <div class="employee-container container" style="padding-bottom: 15px;">
                     <div class="title">重要人员</div>
                     <div class="line"></div>
@@ -91,7 +91,7 @@
                 <div>{{item.ProjectName}}</div>
                 <div>{{item.No}}</div>
                 <div>{{item.Category}}</div>
-                <div>{{item.ConsCoyList[0].Name}}</div>
+                <div>{{item.ConsCoyList[0] | capitalize }}</div>
                 <div>{{item.Region}}</div>
             </div>
         </div>
@@ -103,6 +103,8 @@ export default{
   data () {
     return {
       searchCompanyName: '',
+      /* eslint-disable-next-line */
+      isManager: (window.sessionStorage.getItem('userRole') == '管理员'),
       companyInfo: {
         Name: '', // 公司名称
         OperName: '', // 法人代表
@@ -129,8 +131,8 @@ export default{
       companyName: '',
       project: [],
       data: {},
-      linkList: [
-      ]
+      linkGlxyInfoDetail: null,
+      linkGlxyInfo: null
     }
   },
   methods: {
@@ -171,6 +173,10 @@ export default{
           /* eslint-disable-next-line */
           if (Response.data.data.project != '无工程项目') {
             this.project = Response.data.data.project
+            console.log(this.project[0].ConsCoyList[0])
+            console.log(this.project[0].ConsCoyList)
+          } else {
+            this.project = []
           }
           if (!this.companyInfo.ContactInfo) {
             this.companyInfo.ContactInfo = { // 联系信息
@@ -186,50 +192,66 @@ export default{
       })
       let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
       let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
-      if (linkinfo1.data.data === false) {
-        this.linkList = []
-      } else {
-        this.linkList.push(linkinfo1.data.data)
-        this.linkList.push(linkinfo2.data.data)
-      }
+      this.linkGlxyInfoDetail = linkinfo1.data.data
+      this.linkGlxyInfo = linkinfo2.data.data
+      // if (linkinfo1.data.data === false || linkinfo2.data.data === false) {
+      //   this.linkList = []
+      // } else {
+      //   this.linkList.push(linkinfo1.data.data)
+      //   this.linkList.push(linkinfo2.data.data)
+      // }
     },
     updateProjectList () {
       this.$http.get('teamuser/getGlxyDetails/' + this.searchCompanyName)
-        .then(Response => {
+        .then(async Response => {
           if (Response.data.data === true) {
-            this.$http.get('teamuser/getGlxyInfo/' + this.searchCompanyName).then(
-              async Response => {
-                if (Response.data.data === true) {
-                  this.$message({
-                    type: 'success',
-                    message: '信息更新成功',
-                    duration: 2000
-                  })
-                  let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
-                  let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
-                  if (linkinfo1.data.data === false) {
-                    this.linkList = []
-                  } else {
-                    this.linkList = []
-                    this.linkList.push(linkinfo1.data.data)
-                    this.linkList.push(linkinfo2.data.data)
-                  }
-                }
-              }
-            )
+            let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
+            this.linkGlxyInfo = linkinfo2.data.data
+            if (this.linkGlxyInfoDetail) {
+              this.$message({
+                type: 'success',
+                message: '详细信息更新成功',
+                duration: 2000
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: '信息更新失败',
+                duration: 2000
+              })
+            }
           }
         })
-
-      // let url = 'http://localhost:3000/api/private/v1/marker/download/'
-      // let a = document.createElement('a')
-      // a.href = url
-      // // a.download = `${vue.layerList[index].layerName}.xlsx`
-      // document.body.appendChild(a)
-      // a.click()
-      // a.remove()
+      this.$http.get('teamuser/getGlxyInfo/' + this.searchCompanyName).then(
+        async Response => {
+          if (Response.data.data === true) {
+            let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
+            this.linkGlxyInfoDetail = linkinfo1.data.data
+            if (this.linkGlxyInfoDetail) {
+              this.$message({
+                type: 'success',
+                message: '概述信息更新成功',
+                duration: 2000
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: '概述更新失败',
+                duration: 2000
+              })
+            }
+          }
+        }
+      )
+      setTimeout(async function () {
+        let linkinfo1 = await this.$http.get('teamuser/IsGlxyInfoDetails/' + this.searchCompanyName)
+        this.linkGlxyInfoDetail = linkinfo1.data.data
+        let linkinfo2 = await this.$http.get('teamuser/IsGlxyInfo/' + this.searchCompanyName)
+        this.linkGlxyInfo = linkinfo2.data.data
+      }, 1000 * 120)
     },
     downloadProjectList1 () {
-      let url = this.linkList[0]
+      let url = this.linkGlxyInfoDetail
       let a = document.createElement('a')
       a.href = url
       a.download = url
@@ -238,7 +260,7 @@ export default{
       a.remove()
     },
     downloadProjectList2 () {
-      let url = this.linkList[1]
+      let url = this.linkGlxyInfo
       let a = document.createElement('a')
       a.href = url
       a.download = url
@@ -389,6 +411,12 @@ export default{
         myChart.setOption(option, true)
         window.onresize = myChart.resize
       }
+    }
+  },
+  filters: {
+    capitalize: function (value) {
+      if (!value) return '——'
+      return value.Name
     }
   },
   computed: {

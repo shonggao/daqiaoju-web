@@ -369,7 +369,9 @@
       <div class="marker-content-item" v-for="(item,index) in layerList[addMarkerLayerName].fieldList" :key="index">
         <label for="">{{item}}</label>
         <div class="self-input">
-          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]">
+          <textarea name="" class="textarea-input" cols="22" rows="1" placeholder="请输入字段值" @input="specifiName($event)" v-model="markerAttribute.markerField[item]"></textarea>
+          <!-- <el-input type="textarea" class="textarea-input" autosize placeholder="请输入字段值" v-model="markerAttribute.markerField[item]"></el-input> -->
+          <!-- <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]"> -->
         </div>
       </div>
       <div class="marker-pic-container margin-top" style="background: #ffffff; padding: 10px 15px;">
@@ -377,16 +379,14 @@
           class="upload-demo"
           ref="uploadPic"
           action=""
-          :on-preview="handlePreview"
           :on-remove="handleRemove"
           :before-remove="beforeRemove"
           :httpRequest='httpRequest'
           multiple
-          list-type="picture"
           :on-exceed="handleExceed"
           :auto-upload="false"
           :file-list="fileList">
-          <label for="" style="margin-right: 15px;">图片</label>
+          <label for="" style="margin-right: 15px;">文件</label>
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
       </div>
@@ -462,7 +462,8 @@
       <div class="marker-content-item" v-for="(item,index) in layerList[editMarkerLayerIndex].fieldList" :key="index">
         <label for="">{{item}}</label>
         <div class="self-input">
-          <input type="text" class="noborder-input" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]">
+          <textarea name="" type="text" class="textarea-input" cols="22" :rows="autoHeight(markerAttribute.markerField[item])" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]"></textarea>
+          <!-- <input type="text" class="noborder-input" :style="{height: autoHeight(markerAttribute.markerField[item])}" placeholder="请输入字段值" v-model="markerAttribute.markerField[item]"> -->
         </div>
       </div>
       <div class="marker-pic-container margin-top" style="background: #ffffff; padding: 10px 15px;">
@@ -475,11 +476,10 @@
           :before-remove="beforeRemove1"
           :httpRequest='httpRequest1'
           multiple
-          list-type="picture"
           :on-exceed="handleExceed"
           :auto-upload="false"
           :file-list="fileList1">
-          <label for="" style="margin-right: 15px;">图片</label>
+          <label for="" style="margin-right: 15px;">文件</label>
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
       </div>
@@ -612,13 +612,13 @@ export default{
         }
       ],
       iconPathList: {
-        'rgb(80, 130, 204)': '../../icons/蓝色.png',
-        'rgb(101, 179, 68)': '../../icons/绿色.png',
-        'rgb(255, 0, 0)': '../../icons/红色.png',
-        'rgb(174, 106, 177)': '../../icons/紫色.png',
-        'rgb(255, 109, 52)': '../../icons/橙色.png',
-        'rgb(255, 192, 67)': '../../icons/黄色.png',
-        'rgb(0, 0, 0)': '../../icons/黑色.png'
+        'rgb(80, 130, 204)': '../../icons/blue.png',
+        'rgb(101, 179, 68)': '../../icons/green.png',
+        'rgb(255, 0, 0)': '../../icons/red.png',
+        'rgb(174, 106, 177)': '../../icons/purple.png',
+        'rgb(255, 109, 52)': '../../icons/orange.png',
+        'rgb(255, 192, 67)': '../../icons/yellow.png',
+        'rgb(0, 0, 0)': '../../icons/black.png'
       }
     }
   },
@@ -635,6 +635,11 @@ export default{
           this.filterMarkerList.push(this.dataManagerLayer.markerList[i])
         }
       }
+    },
+    specifiName (e) {
+      var val = e.target.value
+      e.target.rows = parseInt(String(val).length / 11) + 1
+      console.log(e)
     },
     exportDataStart (index) {
       let vue = this
@@ -708,6 +713,14 @@ export default{
     },
     handlePreview (file) {
       console.log(file)
+      let url = file.url
+      let a = document.createElement('a')
+      a.href = url
+      a.download = file.url
+      a.target = '_blank'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
     },
     handleExceed (files, fileList) {
       this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
@@ -1343,6 +1356,10 @@ export default{
         this.markerAttribute.fontSize = this.markerColor.fontSize
         this.markerAttribute.width = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
         this.markerAttribute.height = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
+        this.markerAttribute.callout = {
+          'content': this.markerAttribute.markerName,
+          'display': 'BYCLICK'
+        }
         this.markerAttribute.iconPath = this.iconPathList[this.markerColor.color]
         this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
         await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
@@ -1368,6 +1385,10 @@ export default{
         this.markerAttribute.width = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
         this.markerAttribute.height = (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20
         this.markerAttribute.iconPath = this.iconPathList[this.markerColor.color]
+        this.markerAttribute.callout = {
+          'content': this.markerAttribute.markerName,
+          'display': 'BYCLICK'
+        }
         this.markerAttribute.layer_id = this.layerList[layerIndex]._id
         this.markerAttribute.markerField = this.attributeAssign(this.layerList[layerIndex].fieldList, this.markerAttribute.markerField)
         await this.$http.put('marker/modify?markerId=' + this.markerAttribute.id, this.markerAttribute).then(Response => {
@@ -1394,7 +1415,7 @@ export default{
         }
       }
       this.deleteFileList.forEach(item => {
-        this.$http.get('marker/deleteImg?imgUrl=' + item + '&markerId=' + this.markerAttribute._id)
+        this.$http.get('marker/deleteImg?imgUrl=' + item + '&markerId=' + this.markerAttribute.id)
       }, this)
       var upData = new FormData()
       this.$refs.uploadPic1.submit()
@@ -1556,10 +1577,13 @@ export default{
       this.editMarkerLayerIndex = this.markerLayerIndex
       let vue = this
       this.$http.get('marker/testDownLoad?markerId=' + this.markerAttribute.id).then(Response => {
-        console.log(vue.fileList1)
-        Response.data.data.forEach((item, index) => {
-          vue.fileList1.push({name: '图片' + index, url: item, isReturn: true})
-        })
+        // console.log(vue.fileList1)
+        if (Response.data.data) {
+          Response.data.data.forEach((item, index) => {
+            console.log(item)
+            vue.fileList1.push({name: '文件' + index + '.' + item.split('.')[1], url: item, isReturn: true})
+          })
+        }
       })
       this.isEdittingMarker = true
     },
@@ -1626,12 +1650,16 @@ export default{
       var markerAttribute = {
         'latitude': this.markerAttribute.latitude,
         'longitude': this.markerAttribute.longitude,
+        'location': this.markerAttribute.location,
         'width': (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20,
         'height': (this.markerColor.fontSize === '30px') ? 30 : (this.markerColor.fontSize === '40px') ? 40 : 20,
         'iconPath': this.iconPathList[this.markerColor.color],
         'color': this.markerColor.color,
         'fontSize': this.markerColor.fontSize,
-        'callout': {},
+        'callout': {
+          'content': this.markerAttribute.markerName,
+          'display': 'BYCLICK'
+        },
         'markerName': this.markerAttribute.markerName,
         'layer_id': this.markerAttribute.layer_id,
         'markerField': this.attributeAssign(this.layerList[this.addMarkerLayerName].fieldList, this.markerAttribute.markerField)
@@ -1814,6 +1842,15 @@ export default{
       // console.log(list)
       return list
     },
+    autoHeight () {
+      return function (value) {
+        if (value === '' || value === 0) {
+          return 1
+        } else {
+          return (parseInt(String(value).length / 11) + 1)
+        }
+      }
+    },
     dataManagerLayer: function () {
       return this.layerList[this.dataLayerIndex] ? this.layerList[this.dataLayerIndex] : {}
     },
@@ -1975,13 +2012,14 @@ export default{
     overflow-y: auto;
 }
 .marker-content-item {
-    height: 40px;
+    /* height: 40px; */
     line-height: 40px;
     padding: 0 15px;
     background: #fff;
     border-bottom: 1px solid #eee; /*no*/
-    overflow: hidden;
+    /* overflow: hidden; */
     font-size: 12px; /*no*/
+    overflow: hidden;
     input {
       height: 30px;
       width: 100%;
@@ -1989,8 +2027,9 @@ export default{
     }
     label {
       max-width: 90px;
-      margin: 0;
+      margin: 10px 0 0 0;
       float: left;
+      line-height: 20px; /*no*/
     }
     .self-input {
       width: 100%;
@@ -2245,7 +2284,9 @@ export default{
   margin: 5px 0px;
   padding: 5px 0px;
 }
-
+.textarea-input{
+  margin: 10px 0;
+}
 .marker-style{
   height: 60px;
   background: transparent;

@@ -18,8 +18,10 @@ Vue.use(Vuex)
 
 /* eslint-disable-next-line */
 this.echarts = echarts
-
+axios.defaults.timeout = 1000 * 60 * 30
+// console.log(axios.defaults.timeout)
 Vue.config.productionTip = false
+// axios.defaults.baseURL = '/api/private/v1/'
 axios.defaults.baseURL = 'http://localhost:3000/api/private/v1/'
 Vue.use(VueAxios, axios)
 Vue.use(ElementUI)

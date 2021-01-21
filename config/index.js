@@ -10,15 +10,16 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {
-      '/api/private/v1':{
-        target: 'http://localhost:3000/',
-        changeOrigin: true,
-        pathRewrite:{
-          '^/api/private/v1': '/api/private/v1'
-        }
-      }
-    },
+    // proxyTable: {
+    //   '/api':{
+    //     target: 'http://127.0.0.1:3000',
+    //     changeOrigin: true,
+    //     pathRewrite:{
+    //       '^/api/private/v1': '/api/private/v1'
+    //     },
+    //     timeout: 1800000
+    //   }
+    // },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST

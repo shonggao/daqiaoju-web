@@ -1,7 +1,7 @@
 <template>
     <div class="login-container">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px" class="login-form">
-            <h2 class="login-title">中铁大桥局大数据平台</h2>
+            <h2 class="login-title">中铁大桥局第一工程有限公司大数据平台</h2>
             <el-form-item label="用户名"  prop="weixinName">
                 <el-input v-model="form.weixinName"></el-input>
             </el-form-item>
